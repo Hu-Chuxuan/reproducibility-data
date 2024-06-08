@@ -1,5 +1,5 @@
 from openai import OpenAI
-client = OpenAI(api_key="your-openai-key", organization="your-org-id")
+client = OpenAI(api_key="your-api-key", organization="your-org-id")
 
 def compare_images(original_img, reproduced_img):
     response = client.chat.completions.create(
@@ -37,9 +37,10 @@ def compare_images(original_img, reproduced_img):
             Notes: 
             (1) sometimes the reproduced results can contain data from original paper, in this cases you should ignore those data and focus on reproduced results.
             (2) You should look carefully at the ticks of numbers on the axis.
+            (3) In cases where some data points in the original figures are not included in the reproduced figures, you should IGNORE those data points.
 
             When you output your decision, if it's unmatched you should clearly label unmatched points according to either (1) or (2); if matched, you should also give detailed examples to elaborate.
-            Your output format can ONLY be "Matched"/"Unmatched" + "#" + "{reasoning for matched/unmatched}"
+            Your output format can ONLY be "{reasoning for matched/unmatched}" + "#"+ "Matched"/"Unmatched"
             ''',
             },
             {
@@ -58,7 +59,7 @@ def compare_images(original_img, reproduced_img):
         }
     ],
     temperature=0.7,
-    max_tokens=1024,
+    max_tokens=4096,
     top_p=1
     )
 
@@ -66,7 +67,7 @@ def compare_images(original_img, reproduced_img):
     print("# of input tokens: ", response.usage.prompt_tokens)
     print("# of output tokens: ", response.usage.completion_tokens)
 
-i = 62
-original_img = f"https://github.com/liyun-zhang/reproducibility-data/raw/main/{i}/O6.png"
-reproduced_img = f"https://github.com/liyun-zhang/reproducibility-data/raw/main/{i}/R6.png"
+i = 10
+original_img = f"https://github.com/liyun-zhang/reproducibility-data/raw/main/{i}/original9.png"
+reproduced_img = f"https://github.com/liyun-zhang/reproducibility-data/raw/main/{i}/reproduced9.png"
 compare_images(original_img, reproduced_img)
