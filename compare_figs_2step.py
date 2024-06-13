@@ -13,17 +13,20 @@ def create_comparsion_set(original_img, reproduced_img):
             You are given a figure that shows reproduced results. Your task is to decide the type of specifications.
             Your decision should be based on the footnotes and the names.
             
-            You should first Determine the level at which specifications are reported (e.g., columns, rows, curves, panels).
+            You should first read the footnotes and the namings of the second figure to determine the level and types of specifications. Sometimes the entire table or plot may be considered as a specification.
             
-            Follow these rules:
-            (1) Label specifications from the original paper or robustness tests as "original" or "robust."
-                (i) Examples of the original paper's data descriptions: main results, baseline results, main findings, or the authors' names.
-                (ii) Examples of robustness test descriptions: alternative specifications, placebo tests, or removal/additional controls.
-            (2) Label specifications from the reproduced results as "reproduced." 
-
-            Notably, sometimes the entire table or plot may be considered as a specification.
-            For each specification, you should elaborate on the reasoning behind your decision.
+            Label each specification following these rules:
+                (1) If it reproduces the original results, label it as "reproduced." 
+                (2) If it is from the original paper, label it as "original". 
+                    Examples: main results, baseline results, main findings, or the authors' names.
+                (3) If it is a robustness test, label it as "robust". 
+                    Examples: alternative specifications, placebo tests, or removal/additional controls.
+            
+            You should first elaborate on the reasoning of your decision for the level. 
+            For each specification, you should elaborate on the reasoning behind your decision for its type.
             Your output format can ONLY be "{specification names}" + "{reasoning for specification type}" + "#" + "original"/"robust"/"reproduced".
+            
+            Let's think step-by-step. 
             '''
             },
             {
@@ -39,7 +42,7 @@ def create_comparsion_set(original_img, reproduced_img):
     model="gpt-4o",
     messages=msgs,
     temperature=0.7,
-    max_tokens=512,
+    max_tokens=1024,
     top_p=1
     )
     print(response.choices[0].message.content)
@@ -96,7 +99,7 @@ def compare_images(original_img, reproduced_img, types):
             {
             "type": "text",
             "text": '''
-            You are given the following figures, the first one depicts the experiment results from the original paper, and the second one depicts the reproduced results. Your job is to decide if the reproduced results match with the original results.
+            You are given a figure depicting the experiment results from the original paper of the reproduced results of previous prompt. Your job is to decide if the reproduced results match with the original results.
 
             To do so, you should first decide the specification to compare according the previous step following these rules:
 
@@ -132,6 +135,8 @@ def compare_images(original_img, reproduced_img, types):
             You should first elaborate on the reasoning of the chosen specifications.
             When you output your decision, if it's unmatched you should clearly label unmatched points according to either (1) or (2); if matched, you should also give detailed examples to elaborate the comparisons.
             Your output format can ONLY be "{reasoning for matched/unmatched}" + "#"+ "Matched"/"Unmatched"
+
+            Let's think step-by-step. 
             ''',
             },
             {
