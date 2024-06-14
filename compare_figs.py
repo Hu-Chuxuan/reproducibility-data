@@ -29,9 +29,6 @@ def compare_images(original_img, reproduced_img):
                 For each selected or discarded specification, you should elaborate on the reasoning behind your decision.
                 Your output format can ONLY be "{specification names}" + "{reasoning for specification selection}" + "#" + "selected {corresponding original results}" or "discarded".
 
-                When you output your decision, if it's unmatched you should clearly label unmatched points according to either (1) or (2); if matched, you should also give detailed examples to elaborate both the selection of comparison set and the comparisons.
-                Your output format can ONLY be "{reasoning for matched/unmatched}" + "#"+ "Matched"/"Unmatched"
-
             Finally, you need to check if the figure contains a table or a plot and compare the seleted specifications.
                 If it is a table:
                     You can only claim a data point is a "Match" if the values are less than 10 percents of errors. The exception is the sample size/observation number types, where you can claim a data point is a "Match" if it is exactly the original value.
@@ -53,6 +50,9 @@ def compare_images(original_img, reproduced_img):
                         and
                         (ii) more than 70 percents of the remaining data points are considered "Match"
                     (4) You should look carefully at the ticks of numbers on the axis.
+                
+                When you output your decision, if it's unmatched you should clearly label unmatched points according to either (1) or (2); if matched, you should also give detailed examples to elaborate both the selection of comparison set and the comparisons.
+                Your output format can ONLY be "{reasoning for matched/unmatched}" + "#"+ "Matched"/"Unmatched"
 
             Let's think step-by-step. 
             ''',
