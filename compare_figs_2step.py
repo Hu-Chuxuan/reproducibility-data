@@ -104,9 +104,15 @@ def compare_images(original_img, reproduced_img, types):
             To do so, you should first decide the specification to compare according the previous step following these rules:
 
             (1) The types of specifications are given in the previous step marked by "#original", "#robustness", or "#reproduced". 
-            (2) Focus solely on the reproduced results, ignoring the original paper's data and robustness tests. 
-            (3) Compare only the shared data points if only a subset of the original results is reproduced.
+            (2) Focus solely on the reproduced results shared by both figures, ignoring the original paper's data and robustness tests. 
+            (3) Ignore the data points that only exist in one of the figures. 
+            (i) You should compare the naming of the data points in the reproduced results with the original results. 
+            (ii) The data points that only exist in the reproduced results could be labeled as "#reproduced" in the previous step. 
+            (iii) Compare only the shared data points if only a subset of the original results is reproduced. 
             
+            For each selected or discarded specification, you should elaborate on the reasoning behind your decision.
+            Your output format can ONLY be "{specification names}" + "{reasoning for specification selection}" + "#" + "selected {corresponding original results}" or "discarded".
+
             After determined the specifications, you need to check if the figure contains a table or a plot.
 
             If it is a table:
@@ -173,9 +179,9 @@ def compare_images(original_img, reproduced_img, types):
 
     return response.choices[0].message.content, response.usage.prompt_tokens, response.usage.completion_tokens
 
-i = 13
-original_img = f"https://github.com/liyun-zhang/reproducibility-data/raw/main/{i}/O1.png"
-reproduced_img = f"https://github.com/liyun-zhang/reproducibility-data/raw/main/{i}/R1.png"
+i = 6
+original_img = f"https://github.com/liyun-zhang/reproducibility-data/raw/main/{i}/original1.png"
+reproduced_img = f"https://github.com/liyun-zhang/reproducibility-data/raw/main/{i}/reproduced1.png"
 
 with open(f"Results/{i}.txt", "+a") as f:
     f.write("-"*25 +  " 1 (2 steps) " + "-"*25 + "\n")
