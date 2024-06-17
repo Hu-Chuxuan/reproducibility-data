@@ -119,7 +119,7 @@ def compare_images(original_img, reproduced_img, types):
 
             To do so, you should first decide the specification to compare according the previous step following these rules:
 
-            (1) The types of specifications are given in the previous step marked by "#original", "#robustness", or "#reproduced". 
+            (1) The types of specifications are given in the previous step marked by "#original", "#robustness", or "#reproduced". However, it may have mistakes, so you MUST explicitly double check the footnotes and the names of the figure to re-confirm the types.
             (2) Focus solely on the reproduced results shared by both figures, ignoring the original paper's data and robustness tests. 
             (3) Ignore the data points that only exist in one of the figures. 
             (i) You should compare the naming of the data points in the reproduced results with the original results. 
