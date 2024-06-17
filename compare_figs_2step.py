@@ -1,6 +1,15 @@
 from openai import OpenAI
-import time
-client = OpenAI(api_key="your-api-key", organization="your-org-id")
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--api", type=str, required=True)
+parser.add_argument("--org", type=str, required=True)
+parser.add_argument("--paper", type=int, required=True)
+parser.add_argument("--sample", type=int, required=True)
+
+args = parser.parse_args()
+
+client = OpenAI(api_key=args.api, organization=args.org)
 
 def create_comparsion_set(original_img, reproduced_img):
     msgs = [
@@ -47,7 +56,7 @@ def create_comparsion_set(original_img, reproduced_img):
     )
     print(response.choices[0].message.content)
 
-    with open(f"Results/{i}.txt", "+a") as f:
+    with open(f"Results/{args.paper}.txt", "+a") as f:
         f.write("Types Prompt:\n" + msgs[0]["content"][0]["text"] + "\n")
         f.write(response.choices[0].message.content + "\n")
 
@@ -170,28 +179,20 @@ def compare_images(original_img, reproduced_img, types):
     
     print(response.choices[0].message.content)
     
-    with open(f"Results/{i}.txt", "+a") as f:
+    with open(f"Results/{args.paper}.txt", "+a") as f:
         f.write("Prompt:\n" + msgs[2]["content"][0]["text"] + "\n")
         f.write(response.choices[0].message.content + "\n")
-        f.write("# of input tokens: " + str(response.usage.prompt_tokens) + "\n")
-        f.write("# of output tokens: " + str(response.usage.completion_tokens) + "\n")
-        f.write("\n")
 
     return response.choices[0].message.content, response.usage.prompt_tokens, response.usage.completion_tokens
 
-i = 6
-original_img = f"https://github.com/liyun-zhang/reproducibility-data/raw/main/{i}/original1.png"
-reproduced_img = f"https://github.com/liyun-zhang/reproducibility-data/raw/main/{i}/reproduced1.png"
+original_img = f"https://github.com/Hu-Chuxuan/reproducibility-data/raw/main/Samples/{args.paper}/O{args.sample}.png"
+reproduced_img = f"https://github.com/Hu-Chuxuan/reproducibility-data/raw/main/Samples/{args.paper}/R{args.sample}.png"
 
-with open(f"Results/{i}.txt", "+a") as f:
-    f.write("-"*25 +  " 1 (2 steps) " + "-"*25 + "\n")
+with open(f"Results/{args.paper}.txt", "+a") as f:
+    f.write("-"*25 +  f" {args.sample} (2 steps) " + "-"*25 + "\n")
 
 types, input_token_type, output_token_type = create_comparsion_set(original_img, reproduced_img)
-command = input("Whether continue (y/n): ")
-if command == "y":
-    response, input_token_cmp, output_token_cmp = compare_images(original_img, reproduced_img, types)
-    print("# of input tokens: ", input_token_type, "+", input_token_cmp, "=", input_token_type + input_token_cmp)
-    print("# of output tokens: ", output_token_type, "+", output_token_cmp, "=", output_token_type + output_token_cmp)
-else:
-    print("# of input tokens: ", input_token_type)
-    print("# of output tokens: ", output_token_type)
+print("="*50)
+response, input_token_cmp, output_token_cmp = compare_images(original_img, reproduced_img, types)
+print("# of input tokens: ", input_token_type, "+", input_token_cmp, "=", input_token_type + input_token_cmp)
+print("# of output tokens: ", output_token_type, "+", output_token_cmp, "=", output_token_type + output_token_cmp)
