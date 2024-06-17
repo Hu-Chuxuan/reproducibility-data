@@ -22,14 +22,21 @@ def create_comparsion_set(original_img, reproduced_img):
             You are given a figure that shows reproduced results. Your task is to decide the type of specifications.
             Your decision should be based on the footnotes and the names.
             
-            You should first read the footnotes and the namings of the second figure to determine the level and types of specifications. Sometimes the entire table or plot may be considered as a specification.
+            (1) You should first read the footnotes and the namings of the second figure to determine the level of specifications. Sometimes the entire table or plot may be considered as a specification.
+                (i) You should first identify the level at which specifications in the figure are reported (e.g. columns, rows, curves, panels) and the types of specifications.
+                (ii) Then, you should list the specifications identified in the figure.
+
+            (2) Label each specification identified in (1) following these rules:
+                (i) If it is from the original paper, label it as "original". 
+                    Examples for descriptions: main results, baseline results, main findings, or the authors' names.
+                (ii) If it is a robustness test, label it as "robust". 
+                    Types of robustness tests: removal/additional control variables, changing the sample, changing the dependent variable, changing the main independent variable, changing the estimation method/model, changing the method of inference, changing the weighting scheme, replication using new data, or placebo tests.
+                (iii) If it reproduces the original results or there is not obvious proof of being robustness tests or original paper, label it as "reproduced." 
             
-            Label each specification following these rules:
-                (1) If it reproduces the original results, label it as "reproduced." 
-                (2) If it is from the original paper, label it as "original". 
-                    Examples: main results, baseline results, main findings, or the authors' names.
-                (3) If it is a robustness test, label it as "robust". 
-                    Examples: alternative specifications, placebo tests, or removal/additional controls.
+            Note: 
+            (1) You ONLY need to label the identified specifications in (1) and focus ONLY on the description of these specifications in the footnotes and namings. You should ignore all other levels at this stage. 
+                For example, if the specifications are reported in columns, you should only focus on the description of each column and ignore the descriptions and namings of rows, panels, or the entire table.
+            (2) If there is not obvious proof of being robustness tests or original paper, you should label it as "reproduced" by default.
             
             You should first elaborate on the reasoning of your decision for the level. 
             For each specification, you should elaborate on the reasoning behind your decision for its type.
@@ -146,6 +153,8 @@ def compare_images(original_img, reproduced_img, types):
 
             Notes: 
             (1) You should look carefully at the ticks of numbers on the axis.
+            (2) You MUST compare ALL data point except the ones that is not reproduced results or not shared by both figures.
+            (3) Your final decision should be the general impression of the table or plot based on the rules above instead of the individual data points.
 
             You should first elaborate on the reasoning of the chosen specifications.
             When you output your decision, if it's unmatched you should clearly label unmatched points according to either (1) or (2); if matched, you should also give detailed examples to elaborate the comparisons.
