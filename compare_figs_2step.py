@@ -43,6 +43,10 @@ def create_comparsion_set(original_img, reproduced_img):
             You should first elaborate on the reasoning of your decision for the level. 
             For each specification, you should elaborate on the reasoning behind your decision for its type.
             Your output format can ONLY be "{specification names}" + "{reasoning for specification type}" + "#" + "original"/"robust"/"reproduced".
+
+            Finally, you may need to extract data from the figure depending of whether it contains a table or a figure: 
+                (1) If this figure contains a table, you should re-draw the contents in table that is labeled as "#reproduced" in the figure in markdown grammar. 
+                (2) You MUST ENSURE the data points are in the same order as the original results.
             
             Let's think step-by-step. 
             '''
@@ -60,7 +64,7 @@ def create_comparsion_set(original_img, reproduced_img):
     model="gpt-4o",
     messages=msgs,
     temperature=0.7,
-    max_tokens=1024,
+    max_tokens=2048,
     top_p=1
     )
     print(response.choices[0].message.content)
@@ -121,37 +125,42 @@ def compare_images(original_img, reproduced_img, types):
 
             To do so, you should first decide the specification to compare according the previous step following these rules:
 
-            (1) The types of specifications are given in the previous step marked by "#original", "#robustness", or "#reproduced". However, it may have mistakes, so you MUST explicitly double check the footnotes and the names of the figure to re-confirm the types.
+            (1) The types of specifications are given in the previous step marked by "#original", "#robustness", or "#reproduced". 
             (2) Focus solely on the reproduced results shared by both figures, ignoring the original paper's data and robustness tests. 
             (3) Ignore the data points that only exist in one of the figures. 
-            (i) You should compare the naming of the data points in the reproduced results with the original results. 
-            (ii) The data points that only exist in the reproduced results could be labeled as "#reproduced" in the previous step. 
-            (iii) Compare only the shared data points if only a subset of the original results is reproduced. 
+                (i) You should compare the naming of the data points in the reproduced results with the original results. 
+                (ii) The data points that only exist in the reproduced results could be labeled as "#reproduced" in the previous step. 
+                (iii) Compare only the shared data points if only a subset of the original results is reproduced. 
+            (4) For each selected specification, find the corresponding data points in the original results.
             
             For each selected or discarded specification, you should elaborate on the reasoning behind your decision.
-            Your output format can ONLY be "{specification names}" + "{reasoning for specification selection}" + "#" + "selected {corresponding original results}" or "discarded".
+            Your output format can ONLY be "{specification names}" + "{reasoning for specification selection}" + "#" + "selected" + " {corresponding original results}" or "discarded".
 
             After determined the specifications, you need to check if the figure contains a table or a plot.
 
             If it is a table:
-            You can only claim a data point is a "Match" if the values are less than 10 percents of errors. The exception is the sample size/observation number types, where you can claim a data point is a "Match" if it is exactly the original value.
-            You claim the table is a "Match" if and only if 
-            (i) more than 80 percents of the data points of sample size/observation number types are considered "Match"
-            and
-            (ii) more than 50 percents of the data points of errors/std errors/processed number types are considered "Match"
-            and
-            (iii) more than 70 percents of the data points of other number types are considered "Match"
+            (1) If the previous prompt extracted reproduced results, reference it instead of recognizing data points from the figure again. 
+                (i) Since the table drawn by the last prompt could be inaccurate, you should double check it with the figure. 
+                (ii) You should pay attention that some cells may be empty. 
+                For example, when the first column has three data points and the second column has six data points, you should only compare nine data points since the last three data points in the first column do not exist.
+            (2) You can only claim a data point is a "Match" if the values are less than 10 percents of errors. The exception is the sample size/observation number types, where you can claim a data point is a "Match" if it is exactly the original value.
+            (3) You claim the table is a "Match" if and only if 
+                (i) more than 80 percents of the data points of sample size/observation number types are considered "Match"
+                and
+                (ii) more than 50 percents of the data points of errors/std errors/processed number types are considered "Match"
+                and
+                (iii) more than 70 percents of the data points of other number types are considered "Match"
 
             If it is a plot, you should first decide the plot type:
             (1) if it is bar plots, scattered plots, line charts connecting dots, or other types of discrete values, you can only claim a data point is a "Match":
-            (i) You should identify the data points from the figure before making comparisons. You MUST ensure that the data you identify from the figure have at least four significant digits
-            (i) ONLY IF the values are clearly labelled: less than 10 percents of errors
-            (ii) ELSE: the difference is less than half of the granularity of the axis ticks;
+                (i) You should identify the data points from the figure before making comparisons. You MUST ensure that the data you identify from the figure have at least four significant digits
+                (ii) ONLY IF the values are clearly labelled: less than 10 percents of errors
+                (iii) ELSE: the difference is less than half of the granularity of the axis ticks;
             (2) else if it's of continuous values, you can only claim a data point is a "Match" if the trends between it and its neighboring points (if any) are the same (increase, decrease, or almost identical with less than 5 percents of difference).
             You claim the plot is a "Match" if and only if 
-            (i) more than 50 percents of the upper and lower bound described by the error bars are considered "Match"
-            and
-            (ii) more than 70 percents of the remaining data points are considered "Match"
+                (i) more than 50 percents of the upper and lower bound described by the error bars are considered "Match"
+                and
+                (ii) more than 70 percents of the remaining data points are considered "Match"
 
             Notes: 
             (1) You should look carefully at the ticks of numbers on the axis.
