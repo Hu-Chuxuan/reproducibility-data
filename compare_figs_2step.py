@@ -1,4 +1,5 @@
 from openai import OpenAI
+import time
 import argparse
 
 parser = argparse.ArgumentParser()
@@ -22,9 +23,10 @@ def create_comparsion_set(original_img, reproduced_img):
             You are given a figure that shows reproduced results. Your task is to decide the type of specifications.
             Your decision should be based on the footnotes and the names.
             
-            (1) You should first read the footnotes and the namings of the second figure to determine the level of specifications. Sometimes the entire table or plot may be considered as a specification.
-                (i) You should first identify the level at which specifications in the figure are reported (e.g. columns, rows, curves, panels) and the types of specifications.
-                (ii) Then, you should list the specifications identified in the figure.
+            (1) You should first read the footnotes and the namings of the figure to determine the level of specifications. 
+                (i) If there is no information of the level, e.g. there are no footnotes and the namings are not about specifications, you should consider the entire table or plot as a specification.
+                (ii) Examples for the level of specifications are columns, rows, curves, panels, or the entire table or plot.
+                (iii) Then, you should list the specifications identified in the figure. The specifications you listed MUST be able to cover ALL the data points in the figure.
 
             (2) Label each specification identified in (1) following these rules:
                 (i) If it is from the original paper, label it as "original". 
@@ -202,6 +204,7 @@ with open(f"Results/{args.paper}.txt", "+a") as f:
 
 types, input_token_type, output_token_type = create_comparsion_set(original_img, reproduced_img)
 print("="*50)
+time.sleep(5)
 response, input_token_cmp, output_token_cmp = compare_images(original_img, reproduced_img, types)
 print("# of input tokens: ", input_token_type, "+", input_token_cmp, "=", input_token_type + input_token_cmp)
 print("# of output tokens: ", output_token_type, "+", output_token_cmp, "=", output_token_type + output_token_cmp)
