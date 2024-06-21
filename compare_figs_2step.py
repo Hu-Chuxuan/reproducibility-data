@@ -1,7 +1,7 @@
 from openai import OpenAI
 import time
 import argparse
-from prompts import label_specs_prompt, compare_dps_prompt, extract_dps_prompt
+from prompts import label_specs_prompt, compare_dps_prompt
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--api", type=str, required=True)
@@ -39,6 +39,12 @@ def label_specs(original_img, reproduced_img):
                 "url": reproduced_img,
             },
             },
+            {
+            "type": "image_url",
+            "image_url": {
+                "url": original_img,
+            },
+            }
         ]
         }
     ]
@@ -66,6 +72,12 @@ def compare_dps(original_img, reproduced_img, types):
                     "url": reproduced_img,
                 },
                 },
+                {
+                "type": "image_url",
+                "image_url": {
+                    "url": original_img,
+                },
+                },
             ]
         },
         {
@@ -84,12 +96,12 @@ def compare_dps(original_img, reproduced_img, types):
                 "type": "text",
                 "text": compare_dps_prompt,
                 },
-                {
-                "type": "image_url",
-                "image_url": {
-                    "url": original_img,
-                },
-                },
+                # {
+                # "type": "image_url",
+                # "image_url": {
+                #     "url": original_img,
+                # },
+                # },
             ],
         }
     ]
@@ -113,5 +125,5 @@ types, input_token_type, output_token_type = label_specs(original_img, reproduce
 print("="*50)
 time.sleep(10)
 compare, input_token_cmp, output_token_cmp = compare_dps(original_img, reproduced_img, types)
-print("# of input tokens: ", input_token_type, "+", input_token_cmp, "=", input_token_type + input_token_cmp)
+print("# of input tokens: ", input_token_type, "+", input_token_cmp, "=", input_token_type  + input_token_cmp)
 print("# of output tokens: ", output_token_type, "+", output_token_cmp, "=", output_token_type + output_token_cmp)
