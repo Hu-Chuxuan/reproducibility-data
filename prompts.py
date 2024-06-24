@@ -40,6 +40,8 @@ The, you need to extract data points from the picture.
         (1) For each reproduction data point, first find its corresponding data point in the original results.
         (2) You ONLY need to re-draw the data point labeled as "#reproduced" in the reproduced results and their corresponding data points using markdown syntax. 
         (3) In your extracted table, each cell MUST only contain one data point. This means that if there are multiple data points in a cell, e.g. a cell contains a mean and a standard error, you should split them into two cells. 
+        (4) Each data point might have different statistics in the brackets and parantheses. You MUST read the footnotes in each picture carefully, explicitly copy sentences describing their meanings, determine their meanings individually. Then, you should choose one of the statistics and convert it into the other one if it is possible. You should elaborate the reasoning for each data point, and label them in the tables. 
+            For example, when the original results present the standard error and the reproduced results present the p-values, you should calculate the p-values of the original results when they also provided the coefficient and the samples size. However, if the original results does not have the sample size, while the reproduced results have the sample size, you should calculate the standard error of the reproduced results.
 
     2. If they are discrete plots:
         (1) If the plot includes error bars, estimate its diameter comparing with the increments of the axis ticks.
@@ -52,10 +54,10 @@ The, you need to extract data points from the picture.
 
     3. If they are continuous plots, for each picture, identify the increments on the x-axis, and divide the range of x-axis into intervals with a length of 1/5 of a single step increment. In this case, you only need to output the sliced intervals for each picture. 
 
-
     Note:
         A. the reproduced results may be significantly different from the original results. You **MUST ONLY FOCUS ON EACH INDIVIDUAL picture AND IGNORE THE OTHER ONE** when extracting data points from them. You MUST reason for each picture INDIVIDUALLY. 
-        B. For the plots, you MUST elaborate the reasoning for all data points in the format of "{data point}" + "{pixel position for mean and pixel distance of diameter}" + "{calculation for convert unit}" + "#" + "{values for mean and diameter}". 
+        B. For the tables, you MUST elaborate the reasoning for the statistics in the format of "{original footnotes}" + "{reproduced footnotes}" + "{reasoning for their statistics}" + "{reasoning for their conversion}" + "#" + "{values for the original and reproduced statistics}".
+        C. For the plots, you MUST elaborate the reasoning for all data points in the format of "{data point}" + "{pixel position for mean and pixel distance of diameter}" + "{calculation for convert unit}" + "#" + "{values for mean and diameter}". 
             For example: "In the plot, in y-axis, 0 is about 450 pixel, 0.05 is about 350 pixel. 
             Control: 
                 The pixel posititon of its mean is about (100, 420), the diameter of its error bar is about 40 pixels. 
@@ -115,9 +117,10 @@ If the reproduced result is a plot, you should first decide the plot type:
     (ii) more than 70 percents of the remaining data points are considered "Match"
 
 Notes: 
-(1) You should look carefully at the ticks of numbers on the axis.
-(2) You MUST compare ALL data point except the ones that is not reproduced results or not shared by both pictures.
-(3) Your final decision should be the general impression of the table or plot based on the rules above instead of the individual data points.
+(1) The original and reproduced results may present different statistics in the same experiment, you should only compare the statstics shared by both pictures. For example, if the original results present the mean and the standard error, while the reproduced results present the mean and the p-values, you should only compare the mean.
+(2) You should look carefully at the ticks of numbers on the axis.
+(3) You MUST compare ALL data point except the ones that is not reproduced results or not shared by both pictures.
+(4) Your final decision should be the general impression of the table or plot based on the rules above instead of the individual data points.
 
 You should first elaborate on the reasoning of the chosen replication specifications.
 When you output your decision, if it's unmatched you should clearly label all unmatched points according to aforementioned rules; if matched, you should also give detailed examples to elaborate the comparisons.
