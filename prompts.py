@@ -1,20 +1,17 @@
 label_specs_prompt = """
 You are given two pictures. The first picture shows reproduced results, while the second picture presents the original results. 
 
-Your first task is to decide the type of replication specifications in the reproduced results. Your decision should be based on the footnotes and the names in the reproduced results. In this step, you should focus on the reproduced results. 
+Your first task is to decide the type of replication specifications in the reproduced results. Your decision should be based on the footnotes and the names in the reproduced results. In this step, you should focus on the reproduced results. By "reproduced results", we mean that the results of sub-experiments in the original paper with the same specification or only correcting errors in the original paper.
 
     1. You should determine the level of replication specifications in the reproduced results based on your summry above and the namings. 
-        (1) List the possible levels of replication specifications in the reproduction results. 
+        (1) List the possible levels of replication specifications and their contents in the reproduction results. 
             (i) If the pictures contain tables, it might be columns, rows, panels, or the entire table. 
-            (ii) If the pictures contain plots, it might be the curves, or the entire plot. When a plot has multiple figures and these figures can form a "matrix" of figures, we can also consider the rows and columns of the matrix as levels. 
-            (iii) A special case is that the levels may be distinguished by the fonts if there are multiple fonts, e.g., the reproduced results are in italic or bold.
-        (2) We consider all experiments in the original results as sub-experiments of the replication specifications instead of replication specifications. 
-            (i) Read the original results, list the the sub-experiments, and determine at which level they are presented in the reproduced results. 
-            (ii) Elimitate the levels that only present sub-experiments from the list of replication specifications and list the rest of the possible levels. 
-        (3) We only focus on the replication specifications, which could include reproductions, original results, and robustness tests. Find the level of replication specifications from the rest of the possible list based on the footnotes and the namings in the reproduced results.
+            (ii) If the pictures contain plots, it might be the curves, or the entire plot. When a plot has multiple figures, the smallest unit is not panels, but the figures. These figures can form a "matrix" of figures, and we can also consider the rows and columns of the matrix as levels. In addition, each subfigure may also be a specification. 
+            (iii) For the tables, there are two special cases for the possible levels of replication specifications. The first case is that the levels may be distinguished by the fonts if there are multiple fonts, e.g., the reproduced results are in italic or bold. Another case is that there might have sub-tables, which can be identified that multiple tables with different titles in one picture, and you should consider the sub-tables as levels.
+        (2) We only focus on the replication specifications, which could include reproductions, original results, and robustness tests. Find the level of replication specifications from the rest of the possible list based on the footnotes and the namings in the reproduced results.
             (i) If there are footnotes in the reproduced results, carefully read them and summarize the information in the footnotes to find the corresponding level in the rest of the possible list and the description of each specification. 
             (ii) If there is no information of the level, e.g. there are no footnotes and the namings are not about replication specifications, you should consider the entire table or plot as a replication specification. 
-        (4) Then, you should list the replication specifications identified in the picture. The replication specifications you listed MUST be able to cover ALL the data points in the picture.
+        (3) Then, you should list the replication specifications identified in the picture. The replication specifications you listed MUST be able to cover ALL the data points in the picture.
 
     2. Label each replication specification in the reproduced results identified in (1) based on the descriptions in the footnotes and namings following these rules:
         (1) If it is from the original paper, label it as "original". 
@@ -40,7 +37,7 @@ The, you need to extract data points from the picture.
         (1) For each reproduction data point, first find its corresponding data point in the original results.
         (2) You ONLY need to re-draw the data point labeled as "#reproduced" in the reproduced results and their corresponding data points using markdown syntax. 
         (3) In your extracted table, each cell MUST only contain one data point. This means that if there are multiple data points in a cell, e.g. a cell contains a mean and a standard error, you should split them into two cells. 
-        (4) Each data point might have different statistics in the brackets and parantheses. You MUST read the footnotes in each picture carefully, explicitly copy sentences describing their meanings, determine their meanings individually. Then, you should choose one of the statistics and convert it into the other one if it is possible. You should elaborate the reasoning for each data point, and label them in the tables. 
+        (4) Each data point might have different statistics in the brackets and parantheses. You MUST read the footnotes in each picture carefully, explicitly copy sentences describing their meanings, determine their meanings individually. Then, you should choose one of the statistics and convert it into the other one if it is possible. You should elaborate the reasoning for each data point, and label them in the tables. When multiple directions are possible, p-values should be preferred over the standard errors.
             For example, when the original results present the standard error and the reproduced results present the p-values, you should calculate the p-values of the original results when they also provided the coefficient and the samples size. However, if the original results does not have the sample size, while the reproduced results have the sample size, you should calculate the standard error of the reproduced results.
 
     2. If they are discrete plots:
