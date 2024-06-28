@@ -130,10 +130,10 @@ label_specs_prompt_no_extract = """
 Your first task is to decide the type of replication specifications in the reproduced results. Your decision should be based on the footnotes and the names in the reproduced results. In this step, you should focus on the reproduced results. 
 
     1. You should determine the level of replication specifications in the reproduced results based on your summry above and the namings. 
-        (1) List the possible levels of replication specifications in the reproduction results. 
+        (1) List the possible levels of replication specifications and their contents in the reproduction results. 
             (i) If the pictures contain tables, it might be columns, rows, panels, or the entire table. 
             (ii) If the pictures contain plots, it might be the curves, or the entire plot. When a plot has multiple figures and these figures can form a "matrix" of figures, we can also consider the rows and columns of the matrix as levels. 
-            (iii) A special case is that the levels may be distinguished by the fonts if there are multiple fonts, e.g., the reproduced results are in italic or bold.
+            (iii) For the tables, there are two special cases for the possible levels of replication specifications. The first case is that the levels may be distinguished by the fonts if there are multiple fonts, e.g., the reproduced results are in italic or bold. Another case is that there might have sub-figures in the tables, and you should consider the sub-figures as levels.
         (2) We consider all experiments in the original results as sub-experiments of the replication specifications instead of replication specifications. 
             (i) Read the original results, list the the sub-experiments, and determine at which level they are presented in the reproduced results. 
             (ii) Elimitate the levels that only present sub-experiments from the list of replication specifications and list the rest of the possible levels. 
