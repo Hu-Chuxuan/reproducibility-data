@@ -89,17 +89,16 @@ If the reproduced result is a table:
         For example, when the first column has three data points and the second column has six data points, you should only compare nine data points since the last three data points in the first column do not exist.
     (ii) Also, you should extract the data points from the original results following the same rules as the previous prompt. 
 (2) You can only claim a data point is a "Match" if the values are less than 10 percents of errors. The exception is the sample size/observation number types, where you can claim a data point is a "Match" if it is exactly the original value.
-(3) You claim the table is a "Match" if and only if 
-    (i) more than 80 percents of the data points of sample size/observation number types are considered "Match"
-    and
-    (ii) more than 50 percents of the data points of errors/std errors/processed number types are considered "Match"
-    and
-    (iii) more than 70 percents of the data points of other number types are considered "Match"
+(3) A table is claimed as a "Match" if and only if all the following conditions are met:
+    (i) more than 90% percent of the overall numbers are considered "Match"
+    (ii) more than 80 percent of the sample size/observation number types are considered "Match"
+    (iii) more than 80 percent of the errors/std errors/processed number types are considered "Match"
+    (iv) more than 80 percent of the coefficients are considered "Match"
 
 If the reproduced result is a plot, you should first decide the plot type:
 (1) If it is bar plots, scattered plots, line charts connecting dots, or other types of discrete values, you can only claim a data point is a "Match":
     (i) The previous step should have extracted the data points from the pictures. You should reference them instead of recognizing data points from the pictures again. You need to compare the data points, including the error bars, extracted from the reproduced results with the original results.
-    (ii) ONLY IF the values are clearly labelled: less than 10 percents of errors
+    (ii) ONLY IF the values are clearly labeled: less than 10 percent of errors
     (iii) ELSE: the difference is less than half of the granularity of the axis ticks;
 (2) Else, if it's of continuous values: 
     (i) You MUST examine both the coarse-grained global trends and the fine-grained localities of the data points.
@@ -109,9 +108,9 @@ If the reproduced result is a plot, you should first decide the plot type:
         B. Compare the data points in each interval. For each interval, you can claim it as matched if the data points in it exhibit the same trend between it and its neighboring points (if any) are the same (increase, decrease, or almost identical. 
         C. For this step, you should elaborate your sliced intervals first and then your comparisons the data points in each interval.
 (3) You claim the plot is a "Match" if and only if 
-    (i) more than 50 percents of the diameter described by the error bars are considered "Match"
+    (i) more than 50 percent of the diameter described by the error bars are considered "Match"
     and
-    (ii) more than 70 percents of the remaining data points are considered "Match"
+    (ii) more than 70 percent of the remaining data points are considered "Match"
 
 Notes: 
 (1) The original and reproduced results may present different statistics in the same experiment, you should only compare the statstics shared by both pictures. For example, if the original results present the mean and the standard error, while the reproduced results present the mean and the p-values, you should only compare the mean.
