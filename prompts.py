@@ -32,14 +32,21 @@ Your first task is to decide the type of replication specifications in the repro
     For each replication specification, you should elaborate on the reasoning for each step behind your decision for its type.
     Your output format can ONLY be "{replication specification names}" + "{reasoning for replication specification type}" + "#" + "original"/"robust"/"reproduced".
 
-The, you need to extract data points from the picture. 
-    1. If this is a table:
-        (1) For each reproduction data point, first find its corresponding data point in the original results.
-        (2) You ONLY need to re-draw the data point labeled as "#reproduced" in the reproduced results and their corresponding data points using markdown syntax. 
-        (3) In your extracted table, each cell MUST only contain one data point. This means that if there are multiple data points in a cell, e.g. a cell contains a mean and a standard error, you should split them into two cells. 
+Then, you need to extract data points from both pictures. 
+    1. If they are tables:
+        (1) You ONLY need to re-draw the data point labeled as "#reproduced" in the reproduced results and their corresponding data points using markdown syntax. 
+        (2) For each reproduction data point, first find its corresponding data point in the original results. 
+        (3) You need to extract different types of statistics in each picture. More specifically, 
+            (i) You should first find all the sample sizes in a picture, and put them in the first table. 
+            (ii) Then, you should find all the errors/std errors/processed numbers in a picture, and put them in the second table.
+            (iii) Next, you should find all the coefficients in a picture, and put them in the third table.
+            (iv) Finally, you should find the rest of the numbers in a picture, and put them in the fourth table.
+            (v) You MUST NOT repeat any data points in the tables and you MUST NOT miss any data points in the pictures.
+            (vi) Each staistics should be able to distinguish its source of which picture it comes from and which data point it is.
         (4) Each data point might have different statistics in the brackets and parantheses. You MUST read the footnotes in each picture carefully, explicitly copy sentences describing their meanings, determine their meanings individually. Then, you should choose one of the statistics and convert it into the other one if it is possible. You should elaborate the reasoning for each data point, and label them in the tables. When multiple directions are possible, p-values should be preferred over the standard errors.
             For example, when the original results present the standard error and the reproduced results present the p-values, you should calculate the p-values of the original results when they also provided the coefficient and the samples size. However, if the original results does not have the sample size, while the reproduced results have the sample size, you should calculate the standard error of the reproduced results.
-
+        (5) You MUST retain the names of the data points in the extracted tables instead of simply referring to them as "column (1)" etc. 
+    
     2. If they are discrete plots:
         (1) If the plot includes error bars, estimate its diameter comparing with the increments of the axis ticks.
         (2) To estimate a data point, 
@@ -52,7 +59,7 @@ The, you need to extract data points from the picture.
     3. If they are continuous plots, for each picture, identify the increments on the x-axis, and divide the range of x-axis into intervals with a length of 1/5 of a single step increment. In this case, you only need to output the sliced intervals for each picture. 
 
     Note:
-        A. the reproduced results may be significantly different from the original results. You **MUST ONLY FOCUS ON EACH INDIVIDUAL picture AND IGNORE THE OTHER ONE** when extracting data points from them. You MUST reason for each picture INDIVIDUALLY. 
+        A. the reproduced results may be significantly different from the original results. You **MUST ONLY FOCUS ON EACH INDIVIDUAL picture AND IGNORE THE OTHER ONE** when extracting data points from one of them. You MUST reason for each picture INDIVIDUALLY. 
         B. For the tables, you MUST elaborate the reasoning for the statistics in the format of "{original footnotes}" + "{reproduced footnotes}" + "{reasoning for their statistics}" + "{reasoning for their conversion}" + "#" + "{values for the original and reproduced statistics}".
         C. For the plots, you MUST elaborate the reasoning for all data points in the format of "{data point}" + "{pixel position for mean and pixel distance of diameter}" + "{calculation for convert unit}" + "#" + "{values for mean and diameter}". 
             For example: "In the plot, in y-axis, 0 is about 450 pixel, 0.05 is about 350 pixel. 
@@ -88,12 +95,21 @@ If the reproduced result is a table:
     (i) You should pay attention that some cells may be empty. 
         For example, when the first column has three data points and the second column has six data points, you should only compare nine data points since the last three data points in the first column do not exist.
     (ii) Also, you should extract the data points from the original results following the same rules as the previous prompt. 
-(2) You can only claim a data point is a "Match" if the values are less than 10 percents of errors. The exception is the sample size/observation number types, where you can claim a data point is a "Match" if it is exactly the original value.
-(3) A table is claimed as a "Match" if and only if all the following conditions are met:
-    (i) more than 90% percent of the overall numbers are considered "Match"
-    (ii) more than 80 percent of the sample size/observation number types are considered "Match"
-    (iii) more than 80 percent of the errors/std errors/processed number types are considered "Match"
-    (iv) more than 80 percent of the coefficients are considered "Match"
+(2) You need to calculate the following four matching rates one by one in order. The matching rates of the types of statistics MUST be calculated in the entire table level instead of particular columns or rows. 
+    (i) The matching rate of sample sizes/observation numbers. A sample size/observation number is considered a "Match" if it is exactly the original value. 
+    (ii) The matching rate of errors/std errors/processed numbers. You can claim a standard error is a "Match" if it is less than 5 percent of errors, i.e., it is within the range of 0.95 and 1.05 times of the original value.
+    (iii) The matching rate of coefficients. You can claim a coefficient is a "Match" if it is less than 5 percent of errors.
+    (iv) The matching rate of all numbers. Besides the above three types of statistics, you should also compare the rest of the statistics. You can claim a number is a "Match" if it is less than 5 percent of errors except for the sample size/observation number types.
+(3) You MUST calculate the matching rates with all data points in that reproduced results that belong to one of the reproduction specifications and shared by both pictures.
+(4) Pay attention what statistics you are used to calculate the matching rates since a data point often contains more than one statistics. 
+(5) For the comparison of each data point, you MUST elaborate in the format of "{a statistic from one of the data points in the original results}" + "{a corresponding statistic from the corresponding data points in the reproduced results}" + "{calculation for their differences}" + "#" + "{Matched/Unmatched}"
+    For example: 0.09 (original) v.s. 0.10 (reproduced), error rate = |0.09 - 0.10| / 0.09 = 0.11 > 0.05, # Unmatched
+(6) For each calculation of the matching rate, you MUST elaborate in the format of "{comparison reason}" + "{calculation for the matching rate}" + "#" + "{matching rate}".
+(7) A table is claimed as a "Match" if and only if all the following conditions are met:
+    (i) The matching rate of sample sizes/observation numbers is more than 80 percent.
+    (ii) The matching rate of errors/std errors/processed numbers is more than 80 percent.
+    (iii) The matching rate of coefficients is more than 80 percent.
+    (iv) The matching rate of overall numbers is more than 90 percent.
 
 If the reproduced result is a plot, you should first decide the plot type:
 (1) If it is bar plots, scattered plots, line charts connecting dots, or other types of discrete values, you can only claim a data point is a "Match":
@@ -117,6 +133,7 @@ Notes:
 (2) You should look carefully at the ticks of numbers on the axis.
 (3) You MUST compare ALL data point except the ones that is not reproduced results or not shared by both pictures.
 (4) Your final decision should be the general impression of the table or plot based on the rules above instead of the individual data points.
+(5) For ALL of your calculations, you MUST elaborate your calculation process instead of only the final results. For ALL comparisons, you MUST elaborate your reasoning path including the original data points, the reproduced data points, and the calculation for their differences.
 
 You should first elaborate on the reasoning of the chosen replication specifications.
 When you output your decision, if it's unmatched you should clearly label all unmatched points according to aforementioned rules; if matched, you should also give detailed examples to elaborate the comparisons.
@@ -164,12 +181,15 @@ Let's think step-by-step.
 """
 
 extract_dps_prompt = """
-In the previous query, you have determined the type of replication specifications in the reproduced results. Now, you need to extract data points from the picture. 
+In the previous query, you have determined the type of replication specifications in the reproduced results. Now, you need to extract data points from both pictures. 
 
-1. If this is a table:
-    (1) For each reproduction data point, first find its corresponding data point in the original results.
+1. If they are tables:
+    (1) For each reproduction data point, first find its corresponding data point in the original results. If a data point contains multiple statistics, you MUST extract ALL of the statistics.
     (2) You ONLY need to re-draw the data point labeled as "#reproduced" in the reproduced results and their corresponding data points using markdown syntax. 
     (3) In your extracted table, each cell MUST only contain one data point. This means that if there are multiple data points in a cell, e.g. a cell contains a mean and a standard error, you should split them into two cells. 
+    (4) Each data point might have different statistics in the brackets and parantheses. You MUST read the footnotes in each picture carefully, explicitly copy sentences describing their meanings, determine their meanings individually. Then, you should choose one of the statistics and convert it into the other one if it is possible. You should elaborate the reasoning for each data point, and label them in the tables. When multiple directions are possible, p-values should be preferred over the standard errors.
+        For example, when the original results present the standard error and the reproduced results present the p-values, you should calculate the p-values of the original results when they also provided the coefficient and the samples size. However, if the original results does not have the sample size, while the reproduced results have the sample size, you should calculate the standard error of the reproduced results.
+    (5) You MUST retain the names of the data points in the extracted tables instead of simply referring to them as "column (1)" etc. 
 
 2. If they are discrete plots:
     (1) If the plot includes error bars, estimate its diameter comparing with the increments of the axis ticks.
@@ -183,8 +203,9 @@ In the previous query, you have determined the type of replication specification
 3. If they are continuous plots, for each picture, identify the increments on the x-axis, and divide the range of x-axis into intervals with a length of 1/5 of a single step increment. In this case, you only need to output the sliced intervals for each picture. 
 
 Note:
-    A. the reproduced results may be significantly different from the original results. You **MUST ONLY FOCUS ON EACH INDIVIDUAL picture AND IGNORE THE OTHER ONE** when extracting data points from them. You MUST reason for each picture INDIVIDUALLY. 
-    B. For the plots, you MUST elaborate the reasoning for all data points in the format of "{data point}" + "{pixel position for mean and pixel distance of diameter}" + "{calculation for convert unit}" + "#" + "{values for mean and diameter}". 
+    A. the reproduced results may be significantly different from the original results. You **MUST ONLY FOCUS ON EACH INDIVIDUAL picture AND IGNORE THE OTHER ONE** when extracting data points from one of them. You MUST reason for each picture INDIVIDUALLY. 
+    B. For the tables, you MUST elaborate the reasoning for the statistics in the format of "{original footnotes}" + "{reproduced footnotes}" + "{reasoning for their statistics}" + "{reasoning for their conversion}" + "#" + "{values for the original and reproduced statistics}".
+    C. For the plots, you MUST elaborate the reasoning for all data points in the format of "{data point}" + "{pixel position for mean and pixel distance of diameter}" + "{calculation for convert unit}" + "#" + "{values for mean and diameter}". 
         For example: "In the plot, in y-axis, 0 is about 450 pixel, 0.05 is about 350 pixel. 
         Control: 
             The pixel posititon of its mean is about (100, 420), the diameter of its error bar is about 40 pixels. 
