@@ -76,14 +76,14 @@ You are previously given two pictures depicting the reproduced results and the o
 
 To do so, you need to decide the replication specification to compare according the previous step following these rules:
 
-(1) The types of replication specifications are given in the previous step marked by "#original", "#robustness", or "#reproduced". 
-(2) Focus solely on the reproduced results shared by both pictures, ignoring the original paper's data and robustness tests. 
-(3) Ignore the data points that only exist in one of the pictures. 
-    (i) You should compare the naming of the data points in the reproduced results with the original results. 
-    (ii) The data points that only exist in the reproduced results could be labeled as "#reproduced" in the previous step. 
-    (iii) Compare only the shared data points if only a subset of the original results is reproduced. 
-    (iv) If a replication specification corrected some errors in the original paper without including robustness tests, you should label it as "reproduced" as well and ignore other reproduced replication specifications that did not correct errors.
-(4) For each selected replication specification, find the corresponding data points in the original results.
+1. The types of replication specifications are given in the previous step marked by "#original", "#robustness", or "#reproduced". 
+2. Focus solely on the reproduced results shared by both pictures, ignoring the original paper's data and robustness tests. 
+3. Ignore the data points that only exist in one of the pictures. 
+    (1) You should compare the naming of the data points in the reproduced results with the original results. 
+    (2) The data points that only exist in the reproduced results could be labeled as "#reproduced" in the previous step. 
+    (3) Compare only the shared data points if only a subset of the original results is reproduced. 
+    (4) If a replication specification corrected some errors in the original paper without including robustness tests, you should label it as "reproduced" as well and ignore other reproduced replication specifications that did not correct errors.
+4. For each selected replication specification, find the corresponding data points in the original results.
 
 For each selected or discarded replication specification, you should elaborate on the reasoning behind your decision.
 Your output format can ONLY be "{replication specification names}" + "{reasoning for replication specification selection}" + "#" + "selected" + " {corresponding original results}" or "discarded".
@@ -91,49 +91,55 @@ Your output format can ONLY be "{replication specification names}" + "{reasoning
 After determined the replication specifications, You can start comparison.
 
 If the reproduced result is a table:
-(1) If the previous prompt extracted reproduced results, reference them instead of recognizing data points from the pictures again. 
-    (i) You should pay attention that some cells may be empty. 
+1. If the previous prompt extracted reproduced results, reference them instead of recognizing data points from the pictures again. 
+    (1) You should pay attention that some cells may be empty. 
         For example, when the first column has three data points and the second column has six data points, you should only compare nine data points since the last three data points in the first column do not exist.
-    (ii) Also, you should extract the data points from the original results following the same rules as the previous prompt. 
-(2) You need to calculate the following four matching rates one by one in order. The matching rates of the types of statistics MUST be calculated in the entire table level instead of particular columns or rows. 
-    (i) The matching rate of sample sizes/observation numbers. A sample size/observation number is considered a "Match" if it is exactly the original value. 
-    (ii) The matching rate of errors/std errors/processed numbers. You can claim a standard error is a "Match" if it is less than 5 percent of errors, i.e., it is within the range of 0.95 and 1.05 times of the original value.
-    (iii) The matching rate of coefficients. You can claim a coefficient is a "Match" if it is less than 5 percent of errors.
-    (iv) The matching rate of all numbers. Besides the above three types of statistics, you should also compare the rest of the statistics. You can claim a number is a "Match" if it is less than 5 percent of errors except for the sample size/observation number types.
-(3) You MUST calculate the matching rates with all data points in that reproduced results that belong to one of the reproduction specifications and shared by both pictures.
-(4) Pay attention what statistics you are used to calculate the matching rates since a data point often contains more than one statistics. 
-(5) For the comparison of each data point, you MUST elaborate in the format of "{a statistic from one of the data points in the original results}" + "{a corresponding statistic from the corresponding data points in the reproduced results}" + "{calculation for their differences}" + "#" + "{Matched/Unmatched}"
-    For example: 0.09 (original) v.s. 0.10 (reproduced), error rate = |0.09 - 0.10| / 0.09 = 0.11 > 0.05, # Unmatched
-(6) For each calculation of the matching rate, you MUST elaborate in the format of "{comparison reason}" + "{calculation for the matching rate}" + "#" + "{matching rate}".
-(7) A table is claimed as a "Match" if and only if all the following conditions are met:
-    (i) The matching rate of sample sizes/observation numbers is more than 80 percent.
-    (ii) The matching rate of errors/std errors/processed numbers is more than 80 percent.
-    (iii) The matching rate of coefficients is more than 80 percent.
-    (iv) The matching rate of overall numbers is more than 90 percent.
+    (2) Also, you should extract the data points from the original results following the same rules as the previous prompt. 
+2. You need to calculate the following four matching rates one by one in order. The matching rates of the types of statistics MUST be calculated in the entire table level instead of particular columns or rows. 
+    (1) The matching rate of sample sizes/observation numbers. 
+    (2) The matching rate of errors/std errors/processed numbers. 
+    (3) The matching rate of coefficients. 
+    (4) The matching rate of all numbers. Besides the above three types of statistics, you should also compare the rest of the statistics. 
+3. For the sample size/observation number types, you can claim a pair of numbers is a "Match" if it is exactly the original value. For all other types of statistics, you can claim a pair of numbers from the original and reproduced results is a "Match" if one of the following conditions is true:
+    (1) The difference is less than 5 percent of the original value, i.e. it is within the range of 0.95 and 1.05 times of the original value
+    (2) They have different decimal places and the one with more decimal places can be rounded to the other number. You only need to check this condition when the (1) is not satisfied. 
+        For example, 0.44 and 0.4 are considered as a "Match" since 0.44 can be rounded to 0.4 even though they are not within the range of 0.95 and 1.05 times of the original value, while 0.44 and 0.40 are not considered as a "Match" since 0.44 cannot be rounded to 0.40 since they have the same decimal places and 0.44 is not within the range of 0.95 and 1.05 times of the original value.
+3. You MUST calculate the matching rates with all data points in that reproduced results that belong to one of the reproduction specifications and shared by both pictures.
+4. Pay attention what statistics you are used to calculate the matching rates since a data point often contains more than one statistics. 
+5. For the comparison of each data point, you MUST elaborate in the format of "{a statistic from one of the data points in the original results}" + "{a corresponding statistic from the corresponding data points in the reproduced results}" + "{calculation for their differences}" + "#" + "{Matched/Unmatched}". For example: 
+    0.09 (original) v.s. 0.10 (reproduced), error rate = |0.09 - 0.10| / 0.09 = 0.11 > 0.05, same decimal places, cannot be rounded, # Unmatched
+    0.14 (original) v.s. 0.1 (reproduced), error rate = |0.14 - 0.1| / 0.14 = 0.29 > 0.05, they are standard errors, 0.14 has two decimal places, 0.1 has one decimal place, 0.14 rounded to 0.1, # Matched
+    1.0 (original) v.s. 1.01 (reproduced), error rate = |1.0 - 1.01| / 1.0 = 0.01 < 0.05, # Matched
+6. For each calculation of the matching rate, you MUST elaborate in the format of "{comparison reason}" + "{calculation for the matching rate}" + "#" + "{matching rate}".
+7. A table is claimed as a "Match" if and only if all the following conditions are met:
+    (1) The matching rate of sample sizes/observation numbers is at least 80 percent.
+    (2) The matching rate of errors/std errors/processed numbers is at least 80 percent.
+    (3) The matching rate of coefficients is at least 80 percent.
+    (4) The matching rate of overall numbers is at least 90 percent.
 
 If the reproduced result is a plot, you should first decide the plot type:
-(1) If it is bar plots, scattered plots, line charts connecting dots, or other types of discrete values, you can only claim a data point is a "Match":
-    (i) The previous step should have extracted the data points from the pictures. You should reference them instead of recognizing data points from the pictures again. You need to compare the data points, including the error bars, extracted from the reproduced results with the original results.
-    (ii) ONLY IF the values are clearly labeled: less than 10 percent of errors
-    (iii) ELSE: the difference is less than half of the granularity of the axis ticks;
-(2) Else, if it's of continuous values: 
-    (i) You MUST examine both the coarse-grained global trends and the fine-grained localities of the data points.
-    (ii) In the coarse-grained global trends, you should compare the overall trends of the data points in the reproduced results with the original results and their stationary points. 
-    (iii) In the fine-grained localities, 
-        A. The previous step have sliced the x-axis into intervals with a length of 1/5 of a single step increment. You should compare the data points in each interval.
-        B. Compare the data points in each interval. For each interval, you can claim it as matched if the data points in it exhibit the same trend between it and its neighboring points (if any) are the same (increase, decrease, or almost identical. 
-        C. For this step, you should elaborate your sliced intervals first and then your comparisons the data points in each interval.
-(3) You claim the plot is a "Match" if and only if 
-    (i) more than 50 percent of the diameter described by the error bars are considered "Match"
+1. If it is bar plots, scattered plots, line charts connecting dots, or other types of discrete values, you can only claim a data point is a "Match":
+    (1) The previous step should have extracted the data points from the pictures. You should reference them instead of recognizing data points from the pictures again. You need to compare the data points, including the error bars, extracted from the reproduced results with the original results.
+    (2) ONLY IF the values are clearly labeled: less than 10 percent of errors
+    (3) ELSE: the difference is less than half of the granularity of the axis ticks;
+2. Else, if it's of continuous values: 
+    (1) You MUST examine both the coarse-grained global trends and the fine-grained localities of the data points.
+    (2) In the coarse-grained global trends, you should compare the overall trends of the data points in the reproduced results with the original results and their stationary points. 
+    (3) In the fine-grained localities, 
+        i. The previous step have sliced the x-axis into intervals with a length of 1/5 of a single step increment. You should compare the data points in each interval.
+        ii. Compare the data points in each interval. For each interval, you can claim it as matched if the data points in it exhibit the same trend between it and its neighboring points (if any) are the same (increase, decrease, or almost identical. 
+        iii. For this step, you should elaborate your sliced intervals first and then your comparisons the data points in each interval.
+3. You claim the plot is a "Match" if and only if 
+    (1) more than 50 percent of the diameter described by the error bars are considered "Match"
     and
-    (ii) more than 70 percent of the remaining data points are considered "Match"
+    (2) more than 70 percent of the remaining data points are considered "Match"
 
 Notes: 
-(1) The original and reproduced results may present different statistics in the same experiment, you should only compare the statstics shared by both pictures. For example, if the original results present the mean and the standard error, while the reproduced results present the mean and the p-values, you should only compare the mean.
-(2) You should look carefully at the ticks of numbers on the axis.
-(3) You MUST compare ALL data point except the ones that is not reproduced results or not shared by both pictures.
-(4) Your final decision should be the general impression of the table or plot based on the rules above instead of the individual data points.
-(5) For ALL of your calculations, you MUST elaborate your calculation process instead of only the final results. For ALL comparisons, you MUST elaborate your reasoning path including the original data points, the reproduced data points, and the calculation for their differences.
+1. The original and reproduced results may present different statistics in the same experiment, you should only compare the statstics shared by both pictures. For example, if the original results present the mean and the standard error, while the reproduced results present the mean and the p-values, you should only compare the mean.
+2. You should look carefully at the ticks of numbers on the axis.
+3. You MUST compare ALL data point except the ones that is not reproduced results or not shared by both pictures.
+4. Your final decision should be the general impression of the table or plot based on the rules above instead of the individual data points.
+5. For ALL of your calculations, you MUST elaborate your calculation process instead of only the final results. For ALL comparisons, you MUST elaborate your reasoning path including the original data points, the reproduced data points, and the calculation for their differences.
 
 You should first elaborate on the reasoning of the chosen replication specifications.
 When you output your decision, if it's unmatched you should clearly label all unmatched points according to aforementioned rules; if matched, you should also give detailed examples to elaborate the comparisons.
