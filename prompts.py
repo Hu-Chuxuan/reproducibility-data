@@ -20,7 +20,7 @@ Your first task is to decide the type of replication specifications in the repro
         (2) If it is a robustness test, label it as "robust". 
             Types of robustness tests include removal/additional control variables, changing the sample, removal/additional the independent or dependent variable, changing the estimation method/model, changing the method of inference, changing the weighting scheme, replication using new data, or placebo tests.
         (3) If it reproduces the original results or there is not obvious proof of being robustness tests or original paper, label it as "reproduced." 
-        (4) If a replication specification corrected some errors in the original paper without including robustness tests, you should label it as "reproduced" as well and ignore other reproduced replication specifications that did not correct errors.
+        (4) If a replication specification corrected some errors in the original paper without including robustness tests, you should label it as "reproduced" as well and label other reproduction replication specifications that did not correct errors as "original".
 
     Note: 
     A. You ONLY need to label the identified replication specifications in 1. and focus ONLY on the description of these replication specifications in the footnotes and namings. You should ignore all other levels at this stage. 
@@ -31,7 +31,7 @@ Your first task is to decide the type of replication specifications in the repro
 
     You should first elaborate on the reasoning of your decision for the level. 
     For each replication specification, you should elaborate on the reasoning for each step behind your decision for its type.
-    Your output format can ONLY be "{replication specification names}" + "{reasoning for replication specification type}" + "#" + "original"/"robust"/"reproduced".
+    Your output format can ONLY be "{replication specification names}" + "{reasoning for replication specification type}" + "#" + "original"/"robust"/"reproduced". And after you finish the labeling, you should summarize the replication specifications you identified in the picture.
 
 Then, you need to extract data points from both pictures. 
     1. If they are tables:
@@ -103,14 +103,14 @@ If the reproduced result is a table:
         For example, 0.44 and 0.4 are considered as a "Match" since 0.44 can be rounded to 0.4 even though they are not within the range of 0.95 and 1.05 times of the original value, while 0.44 and 0.40 are not considered as a "Match" since 0.44 cannot be rounded to 0.40 since they have the same decimal places and 0.44 is not within the range of 0.95 and 1.05 times of the original value.
     (2) The difference is less than 5 percent of the original value, i.e. it is within the range of 0.95 and 1.05 times of the original value. You only need to check this condition when the (1) is not satisfied. 
     (3) Let's stress again that you should compare the statistics by the percentage of their differences instead of the absolute differences.
-3. You MUST calculate the matching rates with all data points in that reproduced results that belong to one of the reproduction specifications and shared by both pictures.
-4. Pay attention what statistics you are used to calculate the matching rates since a data point often contains more than one statistics. 
-5. For brevity, you do not need to elaborate on the data points that are reproduced exactly either when they are already exactly the same or they match the condition of rouding in the 3.(1). You MUST elaborate on the comparison process of the second condition in the format of "{a statistic from one of the data points in the original results}" + "{a corresponding statistic from the corresponding data points in the reproduced results}" + "{calculation for their differences}" + "#" + "{Matched/Unmatched}". For example: 
+4. You MUST calculate the matching rates with all data points in that reproduced results that belong to one of the reproduction specifications and shared by both pictures.
+5. Pay attention what statistics you are used to calculate the matching rates since a data point often contains more than one statistics. 
+6. For brevity, you MUST NOT elaborate on the data points that are reproduced exactly either when they are already exactly the same or they can be rounded into the same number under 3.(1) rule. You MUST elaborate on the comparison process of the second condition in the format of "{a statistic from one of the data points in the original results}" + "{a corresponding statistic from the corresponding data points in the reproduced results}" + "{calculation for their differences}" + "#" + "{Matched/Unmatched}". For example: 
     0.09 v.s. 0.10, |0.09 - 0.10| / 0.09 = 0.11 > 0.05, same decimal places, cannot be rounded, # Unmatched
     0.14 v.s. 0.1, |0.14 - 0.1| / 0.14 = 0.29 > 0.05, they are standard errors, 0.14 has two decimal places, 0.1 has one decimal place, 0.14 rounded to 0.1, # Matched
     1.0 v.s. 1.01, |1.0 - 1.01| / 1.0 = 0.01 < 0.05, # Matched
-6. For each calculation of the matching rate, you MUST elaborate on in the format of "{total number of data points}" + "{comparison reason}" + "{counting the number of matched data points}" + "{calculation for the matching rate}" + "#" + "{matching rate}".
-7. A table is claimed as a "Match" if and only if all the following conditions are met:
+7. For each calculation of the matching rate, you MUST elaborate on in the format of "{total number of data points}" + "{comparison reason}" + "{counting the number of matched data points}" + "{calculation for the matching rate}" + "#" + "{matching rate}".
+8. A table is claimed as a "Match" if and only if all the following conditions are met:
     (1) The matching rate of sample sizes/observation numbers is at least 80 percent.
     (2) The matching rate of errors/std errors/processed numbers is at least 80 percent.
     (3) The matching rate of coefficients is at least 80 percent.
