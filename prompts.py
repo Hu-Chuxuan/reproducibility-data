@@ -35,12 +35,15 @@ Your first task is to decide the type of replication specifications in the repro
 
 Then, you need to extract data points from both pictures. 
     1. If they are tables:
-        (1) You ONLY need to re-draw the data point labeled as "#reproduced" in the reproduced results and their corresponding data points using markdown syntax. Your tables MUST include ALL the rest of the data points in the pictured. For each reproduction data point, first find its corresponding data point in the original results. 
+        (1) You ONLY need to re-draw the data point labeled as "#reproduced" in the reproduced results and their corresponding data points using markdown syntax. Your tables MUST include ALL the rest of the data points in the pictured. 
         (2) You need to extract different types of statistics in each picture. More specifically,
             (i) You should first find all the sample sizes in a picture, and put them in the first table. 
             (ii) Then, you should find all the errors/std errors/processed numbers in a picture, and put them in the second table.
             (iii) Next, you should find all the coefficients in a picture, and put them in the third table.
-            (iv) Finally, you should find the rest of the numbers in a picture, and put them in the fourth table.
+            (iv) Finally, you should find the rest of the numbers in a picture, and put them in the fourth table. 
+                A. In this case, you MUST be careful for the type of statistics since different types might have similar names, for example, the R2 and adjusted R2 (or R2 adj.) are different statistics, which means that they should not be in the same table. 
+                B. To better distinguish the types of the statistics, you MUST separate the statistics so that each table only contains one type of statistics with title of the two columns being "{the name of statistics in the reproduced table} (reproduced)" and "{the name of statistics in the original table} (original)". 
+                    For example, in the case of containing the R2, adjusted R2, and F-statistics, you MUST put them in three separate table with the title being "R2 (rerproduced)" and "R2 (original)", "R2 adj. (reproduced)" and "adjusted R2 (original)", and "F-stat (reproduced)" and "F-statistics (original)" respectively. 
             (v) Each table MUST INCLUDE ALL the targe statistics in the picture. But you also MUST NOT REPEAT any statistics in the tables. 
             (vi) Your should output for each reproduction specification in the reproduced results and their corresponding data points in the original results. But the it is not required to be able to distinguish the where the statistics come from. Identifying a statistic from the reproduced results and its corresponding statistic from the original results is NECESSARY.
         (3) For the extraction of each statistic, you should follow these steps:
@@ -77,19 +80,19 @@ Let's think step-by-step.
 compare_dps_prompt = """
 You are previously given two pictures depicting the reproduced results and the original results. Now, your job is to decide if the reproduced results match with the original results.
 
-To do so, you need to decide the replication specification to compare according the previous step following these rules:
+To do so, you need to decide which tables of extracted data point in the previous prompt will be compared following these rules:
 
-1. The types of replication specifications are given in the previous step marked by "#original", "#robustness", or "#reproduced". 
-2. Focus solely on the reproduced results shared by both pictures, ignoring the original paper's data and robustness tests. 
-3. Ignore the data points that only exist in one of the pictures. 
-    (1) You should compare the naming of the data points in the reproduced results with the original results. 
-    (2) The data points that only exist in the reproduced results could be labeled as "#reproduced" in the previous step. 
-    (3) Compare only the shared data points if only a subset of the original results is reproduced. 
-    (4) If a replication specification corrected some errors in the original paper without including robustness tests, you should label it as "reproduced" as well and ignore other reproduced replication specifications that did not correct errors.
-4. For each selected replication specification, find the corresponding data points in the original results.
+1. Focus solely on the reproduced results shared by both pictures, ignoring the original paper's data and robustness tests. 
+2. Examine the data points extracted in the previous query. Ignore the data points that only exist in one of the pictures. 
+3. You should compare the types of the data points in the reproduced results with the original results. You MUST double check whether the extracted data point pairs are the same statistics in the original and reproduced tables carefully. 
+    (1) Pay extra attention to the statistics that are "the rest of the numbers", i.e. that are not sample sizes, errors/std errors/processed numbers, or coefficients. For these statistics that do not have the same name in the original and reproduced results, you MUST elaborate on whether they should be compared.
+    (2) For example, the R2 and adjusted R2 (or R2 adj.) are different statistics, which means that they should not be compared. However, in the last query, they might be extracted in the same pair when they should be discarded. 
+4. The data points that only exist in the reproduced results could be labeled as "#reproduced" in the previous step. 
+5. Compare only the shared data points if only a subset of the original results is reproduced. 
+6. If a replication specification corrected some errors in the original paper without including robustness tests, you should label it as "reproduced" as well and ignore other reproduced replication specifications that did not correct errors.
 
-For each selected or discarded replication specification, you should elaborate on the reasoning behind your decision.
-Your output format can ONLY be "{replication specification names}" + "{reasoning for replication specification selection}" + "#" + "selected" + " {corresponding original results}" or "discarded".
+For each selected or discarded table, you should elaborate on the reasoning behind your decision.
+Your output format can ONLY be "{tables in the previous step}" + "{reasoning for the type of statistics}" + "#" + "selected/discarded".
 
 After determined the replication specifications, You can start comparison.
 
@@ -107,11 +110,11 @@ If the reproduced result is a table:
     (3) Let's stress again that you should compare the statistics by the percentage of their differences instead of the absolute differences.
 4. You MUST calculate the matching rates with all data points in that reproduced results that belong to one of the reproduction specifications and shared by both pictures.
 5. Pay attention what statistics you are used to calculate the matching rates since a data point often contains more than one statistics. 
-6. For brevity, you MUST NOT elaborate on the data points that are reproduced exactly either when they are already exactly the same or they can be rounded into the same number under 3.(1) rule. You MUST elaborate on the comparison process of the second condition in the format of "{a statistic from one of the data points in the original results}" + "{a corresponding statistic from the corresponding data points in the reproduced results}" + "{calculation for their differences}" + "#" + "{Matched/Unmatched}". For example: 
-    0.09 v.s. 0.10, |0.09 - 0.10| / 0.09 = 0.11 > 0.05, same decimal places, cannot be rounded, # Unmatched
-    0.14 v.s. 0.1, |0.14 - 0.1| / 0.14 = 0.29 > 0.05, they are standard errors, 0.14 has two decimal places, 0.1 has one decimal place, 0.14 rounded to 0.1, # Matched
-    1.0 v.s. 1.01, |1.0 - 1.01| / 1.0 = 0.01 < 0.05, # Matched
-7. For each calculation of the matching rate, you MUST elaborate on in the format of "{total number of data points}" + "{comparison reason}" + "{counting the number of matched data points}" + "{calculation for the matching rate}" + "#" + "{matching rate}".
+6. You MUST elaborate on the comparison process of the second condition in the format of "{a statistic from one of the data points in the original results}" + "{a corresponding statistic from the corresponding data points in the reproduced results}" + "{calculation for their differences}" + "#" + "{Matched/Unmatched}". For example: 
+    0.09 v.s. 0.10, same decimal places, both have 2 decimal places, cannot be rounded, |0.09 - 0.10| / 0.09 = 0.11 > 0.05 # Unmatched
+    0.14 v.s. 0.1, they are standard errors, 0.14 has two decimal places, 0.1 has one decimal place, 0.14 rounded to 0.1, # Matched
+    10.0 v.s. 10.05, 10.0 has one decimal places, 10.05 has two decimal places, 10.05 can be rounded to 10.1 != 10.0, |10.05 - 10.0| / 10.0 =0.005 < 0.05 , # Matched
+7. For each calculation of the matching rate, you MUST elaborate on the format of "{total number of data points}" + "{comparison reason}" + "{counting the number of matched data points}" + "{calculation for the matching rate}" + "#" + "{matching rate}".
 8. A table is claimed as a "Match" if and only if all the following conditions are met:
     (1) The matching rate of sample sizes/observation numbers is at least 80 percent.
     (2) The matching rate of errors/std errors/processed numbers is at least 80 percent.
