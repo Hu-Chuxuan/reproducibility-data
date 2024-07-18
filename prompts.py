@@ -54,25 +54,26 @@ Then, you need to extract some data that will be used in the next prompt from bo
             For example, when the original results present the standard error and the reproduced results present the p-values, you should calculate the p-values of the original results when they also provided the coefficient and the samples size. However, if the original results does not have the sample size, while the reproduced results have the sample size, you should calculate the standard error of the reproduced results. 
         (5) For brevity, you may output the statistics without their row and column names. But you MUST ENSURE that all of the statistics in the pictures are matched and MUST explicitly output ALL the statistics in the pictures. Only output part of the statistics is NOT allowed.
     
-    2. If they are plots, you need to extract the important data points in the global trends and the diameters of the error bars. You do not need to extract other data. 
-        (1) First, extract the global trends. 
-            (i) You should extract the maximum and minimum values of the data points in the plot. If there are multiple curves or kinds of data points, you should extract the maximum and minimum values of each curve or kind of data points and the maximum and minimum values of all data points.
-            (ii) You should also extract the extremum values that show the changes of increasing, decreasing, or almost identical trends. 
-            (iii) For each data point, you MUST extract the independent value and the dependent value.
-            (iv) You do not need to extract error bars and data points that are not maximum, minimum, or extremum in this step. 
-        (2) To estimate a data point or the diameter of the error bars, 
-            (i) You should first identify the pixel positions of the ticks on the axis. 
-            (ii) For each data point, you should estimate the pixel position of the mean and the diameter of the error bars in pixel. 
-            (iii) Calculate the mean and the diameter of the error bars to convert them in the same unit as the axis based on the pixel positions.
-        (3) Extract the data points from the original results following the same rules. But you MUST NOT referernce to the reproduced results in the original results since they are independent. When extracting the original results, you MUST IGNORE the reproduced ones. 
-        (4) You should re-draw the data points of both figures with the reasoning in two tables of markdown syntax.
-        (5) You MUST elaborate on the reasoning for all data points in the format of "{type of global trend}" + "{pixel position for independent and dependent values}" + "{calculation for convert unit}" + "#" + "{values for independent and dependent values}" for the global trends and "{data point}" + "{pixel position for pixel distance of diameter}" + "{calculation for convert unit}" + "#" + "{values for diameter}" for the error bars. 
-            For example: "In the plot, in y-axis, 0 is about 450 pixel, 0.05 is about 350 pixel. 
-            Global maximum: we can see that the highest bar in the histogram is the fourth bar whose independent value is 4.5. Its bar is about 200 pixels, which should be 0.05 * 200 / (450 - 350) = 0.1. #maximum: (4.5, 0.1).
-            Control: 
-                The diameter of its error bar is about 40 pixels. 
-                Consider that the 0 in y-axis is in about 450 pixel and 0.05 is in about 350 pixel, the diameter should be 0.05 * 40 / (450 - 350) = 0.02
-                # error bar: 0.02".
+    2. If they are discrete plots, 
+        (1) If the plot includes error bars, estimate its diameter comparing with the increments of the axis ticks.
+        (2) To estimate a data point, you should first identify the pixel positions of the ticks on the axis. Then, for each data point, you should estimate the pixel position of the mean and the diameter of the error bars in pixel. Finally, you should calculate the mean and the diameter of the error bars to convert them in the same unit as the axis based on the pixel positions.
+        (3) For all data points, you MUST first state your reasoning with the relative position of each data point with the ticks of numbers on the axis. You MUST first output your reasoning process for all data points following this example: 
+            "In the plot, in y-axis, 0 is about 450 pixel, 0.05 is about 350 pixel. 
+            Control: The pixel posititon of its mean is about (100, 420), the diameter of its error bar is about 40 pixels. Consider that the 0 in y-axis is in about 450 pixel and 0.05 is in about 350 pixel, the mean should be around 0 + (450 - 420) * (0.05 - 0) / (450 - 350) = 0.015 and the diameter should be 0.05 * 40 / (450 - 350) = 0.02".
+        (4) You MUST first elaborate the reasoning for all data points in the format of "{data point}" + "{pixel position for mean and pixel distance of diameter}" + "{calculation for convert unit}" + "#" + "{values for mean and diameter}". Then, you should re-draw the data points of both figures with the reasoning in two tables of markdown syntax. 
+        (5) Extract the data points from the original results following the same rules. But you MUST referernce to the reproduced results in the original results since they are independent. When extracting the original results, you MUST IGNORE the reproduced ones. 
+
+    3. For the plots, you should also plan for the comparison of the fine-grained local trends. In this step, identify the neighboring data points of each data point to compare. 
+        (1) The definition of "neighboring points" depends on the type of the independent variables.
+            (i) If it is a discrete plot, you should compare a data point with all other data points that have only one different independent value. 
+                For example, if the ticks of the x-axis are "democrat", "republican", "independent" and there are two curves representing "female" and "male", you should compare the data points of ("female", "democrat") with ("female, "republican"), ("female", "independent"), and ("male", "democrat"). 
+            (ii) For brevity, if an independent variable is gradually changing, you can only compare the data points that are adjacent to the data points in the independent variable. 
+                For example, if the ticks of the x-axis are "1900s", "1950s", and "2000s", we know that it is gradually changing in time. You should compare the data points of "1900s" with "1950s", compare "1950s" with "1900s" and "2000s", and compare "2000s" with "1950s".
+            (iii) If it's of continuous values, you should slice the range of independent values into small interval and compare the data points in each interval. For each interval, you can claim it as matched if the data points in it exhibit the same trend between it and its neighboring points (if any) are the same (increase, decrease, or almost identical. 
+            (iv) In this step, you MUST NOT extract the specific number, you ONLY need to describe the neighboring data points by the values of their independent variables.
+        (2) Your output should be in the format of "{data point}" + "{its independent values}" + "{reasoning for its neighboring data points}". 
+        (3) For example, if the plot has two independent variables, the first one can take values of "democrats", "moderates", and "republicans", while the second one can take values of "female" and "male". You output should be: 
+            "For (democrats, female), the first independent variable can be changed to moderates and republicans, while the second independent variable can be changed to male. So, it should be compared with (moderates, female), (republicans, female), and (democrats, male)"
 
     Note:
         A. the reproduced results may be significantly different from the original results. You **MUST ONLY FOCUS ON EACH INDIVIDUAL picture AND IGNORE THE OTHER ONE** when extracting data points from one of them. You MUST reason for each picture INDIVIDUALLY. 
@@ -124,28 +125,17 @@ If the reproduced result is a table:
         (3) The matching rate of coefficients is at least 80 percent.
         (4) The matching rate of overall numbers is at least 90 percent.
 
-If the reproduced result is a plot, you should first decide the plot type:
-    1. For the plots, we care about the trends, including both the global trends and fine-grained local trends, and their error bars. 
-        (1) For global trends, we focus on the maximum and minimum values. Additionally, we want to pay attention to the extremum values to understand when the trend changed. 
-            i. If a plot has more than one curve or more than one kind of data points, you MUST compare the maximum and minimum values of each curve or kind of data points and the maximum and minimum values of all data points. 
-            ii. However, the extremum values should be compared within the same curve or kind of data points.
-            iii. You can claim a pair of global trend data points as a "Match" if the differences of both independent and dependent values between the reproduced results and the original results are less than 5 percent of the original value.
-        (2) For the fine-grained local trends, we focus on the trends between a data point and its neighboring points. You can claim a data point is a "Match" if the reproduced results have the same trend as the original results (increasing, decreasing, or almost identical).
-        (3) For the error bars, you should compare the diameter of the error bars of data points in the reproduced results with the original results. There is no need to compare the error bars of a data points with others in the same plot.
-            You can claim a pair of error bars as a "Match" if the diameter of the error of their diameters is less then 10 percent of the original value.
-    2. If it is a histogram, the "neighboring points" are the data points that are adjacent to the data points in the independent variable. This should include the data points of other experiments if they are in the same plot. 
-    3. If it is bar plots, scattered plots, line charts connecting dots, or other types of discrete values, you can only claim a data point is a "Match":
-        (1) The previous step should have extracted the data points from the pictures. You should reference them instead of recognizing data points from the pictures again. You need to compare the data points, including the error bars, extracted from the reproduced results with the original results.
-        (2) You can claim a data point is a "Match" if it has the same
-        (2) ONLY IF the values are clearly labeled: less than 10 percent of errors
-        (3) ELSE: the difference is less than half of the granularity of the axis ticks;
-    4. Else, if it's of continuous values: 
-        (1) You MUST examine both the coarse-grained global trends and the fine-grained localities of the data points.
-        (2) In the coarse-grained global trends, you should compare the overall trends of the data points in the reproduced results with the original results and their stationary points. 
-        (3) In the fine-grained localities, 
-            i. The previous step have sliced the x-axis into intervals with a length of 1/5 of a single step increment. You should compare the data points in each interval.
-            ii. Compare the data points in each interval. For each interval, you can claim it as matched if the data points in it exhibit the same trend between it and its neighboring points (if any) are the same (increase, decrease, or almost identical. 
-            iii. For this step, you should elaborate on your sliced intervals first and then your comparisons the data points in each interval.
+If the reproduced result is a plot:
+    1. The data points of global trends and the diameters of the error bars are extracted in the previous prompt. You do not need to repeat the extraction of the data points from the pictures. The fine-grained local trends are also planned previously. 
+    2. First, you MUST compare their global trends, i.e. the maximum and minimum values. Additionally, we want to pay attention to the extremum values to understand when the trend changed. 
+        (1) You can claim a pair of global trend data points as a "Match" if the differences of both independent and dependent values between the reproduced results and the original results are less than 5 percent of the original value.
+        (2) If there are multiple curves or kinds of data points, you should compare the maximum and minimum values of each curve or kind of data points and the maximum and minimum values of all data points.
+        (3) You should also compare the extremum values that show the changes of increasing, decreasing, or almost identical trends. 
+    3. Second, you MUST compare the fine-grained local trends. In this step, focus on the trends between a data point and its neighboring points. 
+        (1) You can claim a data point is a "Match" if the reproduced results have the same trend as the original results (increasing, decreasing, or almost identical).
+        (2) In this step, you MUST NOT use the specific number, you can ONLY use the relative relationship between the neighboring data points. 
+    4. Finally, if there are error bars, you should compare the diameter of the error bars of data points in the reproduced results with the original results. There is no need to compare the error bars of a data points with others in the same plot.
+        You can claim a pair of error bars as a "Match" if the diameter of the error of their diameters is less then 10 percent of the original value.
     5. You MUST elaborate on the comparison, including:
         (1) "Global trends:" + "{reasoning for the maximum and minimum values in the entire plot}" + "{reasoning for the maximum and minimum values in each curve or kind of data points}" + "{reasoning for the extremum values}". 
             For each reasoning, you should elaborate on the comparison process in the format of "{independent value of the data point in the reproduced results}" + "{dependent value of the data point in the reproduced results}" + "{independent value of the data point in the original results}" + "{dependent value of the data point in the original results}" + "{calculation for their differences}" + "#" + "{Matched/Unmatched}".
