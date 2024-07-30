@@ -115,14 +115,7 @@ def draw_contours(image):
             cv2.imwrite("contours_dot.png", image)
             return final_contours, image
 
-def get_ind(contour, ind):
-    res = []
-    for point in contour:
-        if point[0][0] == ind:
-            res.append(point[0])
-    return res
-
-def estimate_dots(contour, direction):
+def contour_to_points(contour, direction):
     w, h = max(contour[:, 0, 0]), max(contour[:, 0, 1])
     image = np.zeros((h+5, w+5, 3), np.uint8)
     cv2.drawContours(image, [contour], -1, (255, 255, 255), 1)
@@ -131,7 +124,6 @@ def estimate_dots(contour, direction):
     x_max, y_max = w, h
     
     # Unify the direction
-    points = []
     ind_values = {}
     if direction == "vertical":
         for x in range(x_min, x_max):
@@ -142,6 +134,11 @@ def estimate_dots(contour, direction):
             x_values = np.where(image[y, x_min:x_max] == 255)[0] + x_min
             ind_values[y] = x_values
     
+    return ind_values
+
+def estimate_dots(contour, direction):
+    ind_values = contour_to_points(contour, direction)
+
     # Calculate the average height of the contour
     avg = 0
     for _, deps in ind_values.items():
@@ -149,6 +146,7 @@ def estimate_dots(contour, direction):
     avg /= len(ind_values)
 
     # Filter the points with smaller height
+    points = []
     for ind, deps in ind_values.items():
         if max(deps) - min(deps) > avg * 1.2:
             points.append((ind, (max(deps) + min(deps)) // 2))
@@ -173,14 +171,68 @@ def estimate_dots(contour, direction):
         i = j
     return res
 
-def estimate_axis(contour, axis):
-    # Clip another axis if exists
-    if axis == "x":
-        # Search y-axis at the beginning
-        pass
+def find_axis_line(contour, axis):
+    same_dir_values = contour_to_points(contour, axis)
+    
+    # Find the axis as the longest line
+    lines = []
+    lines_len_sum = 0
+    max_length = 0
+    total_sum = 0
+    for i, values in same_dir_values.items():
+        if len(values) < 2:
+            continue
+        length = max(values) - min(values)
+        total_sum += length
+        if max_length < length * 0.99:
+            lines = [i]
+            max_length = length
+            lines_len_sum = length
+        elif length > max_length * 0.99:
+            lines.append(i)
+            max_length = max(max_length, length)
+            lines_len_sum += length
+    avg = (total_sum - lines_len_sum) // (len(same_dir_values) - len(lines))
+
+    if avg * 2 < max_length:
+        line_lo, line_hi = min(lines), max(lines)
+        axis_coor = (line_lo + line_hi) // 2
+        return same_dir_values, axis_coor, line_hi - line_lo
     else:
-        # Search x-axis at the end
-        pass
+        return same_dir_values, None, None
+
+# TODO: Handle when other_axis_coor is None
+def estimate_axis(contour, axis):
+    if axis == "x":
+        _, axis_coor, line_height = find_axis_line(contour, "horizontal")
+        ind_values, other_axis_coor, _ = find_axis_line(contour, "vertical")
+    else:
+        _, axis_coor, line_height = find_axis_line(contour, "vertical")
+        ind_values, other_axis_coor, _ = find_axis_line(contour, "horizontal")
+
+    # Filter data points taller than line
+    # MARK: Assuming y-axis is at the left end of x-axis and x-axis is at the bottom of y-axis
+    tick_pts = [[other_axis_coor]]
+    for ind in sorted(ind_values.keys(), reverse=axis == "y"):
+        deps = ind_values[ind]
+        if line_height * 1.5 < max(deps) - min(deps):
+            # print(ind, max(deps) - min(deps), line_height * 1.1)
+            if (axis == "x" and ind > other_axis_coor) or (axis == "y" and ind < other_axis_coor):
+                if abs(ind - tick_pts[-1][-1]) > 2:
+                    tick_pts.append([ind])
+                else:
+                    tick_pts[-1].append(ind)
+    tick_pts[0] = tick_pts[0][:1]
+    ticks = []
+    for tick in tick_pts:
+        if axis == "x":
+            ticks.append(((max(tick) + min(tick)) // 2, axis_coor))
+        else:
+            ticks.append((axis_coor, (max(tick) + min(tick)) // 2))
+    return ticks
+
+def estimate_bars(contour):
+    pass
 
 if __name__ == "__main__":
     image = cv2.imread("Samples/107/O1.png")
@@ -191,5 +243,11 @@ if __name__ == "__main__":
     dots = estimate_dots(contours[6], "vertical")
     for dot in dots:
         cv2.circle(image, dot, 3, (255, 255, 0), -1)
+    dots = estimate_axis(contours[7], "x")
+    for dot in dots:
+        cv2.circle(image, dot, 5, (0, 0, 255), -1)
+    dots = estimate_axis(contours[7], "y")
+    for dot in dots:
+        cv2.circle(image, dot, 5, (0, 0, 255), -1)
     cv2.imwrite("dots.png", image)
     print(dots)
