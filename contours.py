@@ -55,12 +55,10 @@ def get_potential_position(point, contours, text, w, h):
 
 def get_label_positions(contours, w, h):
     label_positions = []
-    print("Calculating label positions ...")
-    offset = 20
     for i, contour in tqdm(enumerate(contours)):
         max_dist_sum = 0
         max_dist_min = 0
-        label_position = None
+        label_position = contour[0][0]
         for point in contour:
             positions = get_potential_position(point[0], contours, str(i), w, h)
             for p in positions:
@@ -85,41 +83,50 @@ kernel_sz = 5
 max_scale = 2
 min_area = 100
 
+def is_contour_closed(contour):
+    return cv2.contourArea(contour) > cv2.arcLength(contour, True)
+
 def draw_contours(image):
+    # Turn all pixel not black to white
+    mask = np.all(image != 0, axis=-1)
+    image[mask] = 255
     gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     for i in range(repeat):
         gray_image = cv2.GaussianBlur(gray_image, (kernel_sz, kernel_sz), 0)
         edges = cv2.Canny(gray_image, 50, 150)
         if i < repeat-1:
             contours, _ = cv2.findContours(edges, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-            # image = cv2.imread("Samples/107/O1.png")
             for j, contour in enumerate(iterable=contours):
                 cv2.drawContours(gray_image, [contour], -1, (0, 0, 0), max_scale)
-                # cv2.drawContours(image, [contour], -1, colors[i], 2)
-            # cv2.imwrite(f"test/contours_{i}.png", image)
             cv2.imwrite(f"test/grey_{i}.png", gray_image)
         else:
             contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
             final_contours = []
             for contour in contours:
-                if cv2.contourArea(contour) < min_area:
+                if cv2.contourArea(contour) < min_area or contour_to_points(contour, "vertical") is None or contour_to_points(contour, "horizontal") is None:
                     continue
-                print(cv2.contourArea(contour))
                 final_contours.append(contour)
+            
+            # Mask every outside contours and leave every black points in the last grey image
+            mask = np.all(gray_image != 0) # Set all non-black points to 255
+            gray_image[mask] = 255
+            gray_image = cv2.bitwise_not(gray_image) # Reserve the black points
+            cv2.drawContours(gray_image, final_contours, -1, 255, -1) # Fill the edge of contours with white
+            image = cv2.bitwise_and(image, image, mask=gray_image)
+            cv2.imwrite("contours_mask.png", image)
+
             label_positions = get_label_positions(final_contours, image.shape[1], image.shape[0])
-            # colors = [np.random.randint(0, 256, 3).tolist() for _ in range(len(final_contours))]
+            colors = [np.random.randint(0, 256, 3).tolist() for _ in range(len(final_contours))]
             for j, contour in enumerate(final_contours):
                 cv2.drawContours(image, [contour], -1, colors[j], 1)
                 cv2.putText(image, str(j), label_positions[j], cv2.FONT_HERSHEY_SIMPLEX, 1, colors[j], 2)
-                print(j, label_positions[j])
-            cv2.imwrite("contours_dot.png", image)
-            return final_contours, image
+
+            return final_contours, image, colors
 
 def contour_to_points(contour, direction):
     w, h = max(contour[:, 0, 0]), max(contour[:, 0, 1])
     image = np.zeros((h+5, w+5, 3), np.uint8)
     cv2.drawContours(image, [contour], -1, (255, 255, 255), 1)
-    cv2.imwrite("test/contour.png", image)
     x_min, y_min = min(contour[:, 0, 0]), min(contour[:, 0, 1])
     x_max, y_max = w, h
     
@@ -128,10 +135,14 @@ def contour_to_points(contour, direction):
     if direction == "vertical":
         for x in range(x_min, x_max):
             y_values = np.where(image[y_min:y_max+1, x] == 255)[0] + y_min
+            if len(y_values) <= 1:
+                return None
             ind_values[x] = y_values
     else:
         for y in range(y_min, y_max):
             x_values = np.where(image[y, x_min:x_max] == 255)[0] + x_min
+            if len(x_values) <= 1:
+                return None
             ind_values[y] = x_values
     
     return ind_values
@@ -196,20 +207,33 @@ def find_axis_line(contour, axis):
 
     if avg * 2 < max_length:
         line_lo, line_hi = min(lines), max(lines)
-        axis_coor = (line_lo + line_hi) // 2
-        return same_dir_values, axis_coor, line_hi - line_lo
+        # Find straight line among the longest lines
+        for ind in lines:
+            len_inline = len(same_dir_values[ind])
+            if ind-1 in same_dir_values:
+                len_inline += len(same_dir_values[ind-1])
+            if ind+1 in same_dir_values:
+                len_inline += len(same_dir_values[ind+1])
+            if max_length <= len_inline:
+                axis_coor = (line_lo + line_hi) // 2
+                return same_dir_values, axis_coor, line_hi - line_lo
+        return same_dir_values, None, None
     else:
         return same_dir_values, None, None
 
 # TODO: Handle when other_axis_coor is None
-def estimate_axis(contour, axis):
-    if axis == "x":
-        _, axis_coor, line_height = find_axis_line(contour, "horizontal")
-        ind_values, other_axis_coor, _ = find_axis_line(contour, "vertical")
-    else:
-        _, axis_coor, line_height = find_axis_line(contour, "vertical")
-        ind_values, other_axis_coor, _ = find_axis_line(contour, "horizontal")
+def find_ticks(contours):
+    for i, contour in enumerate(contours):
+        hori_values, hori_coor, hori_height = find_axis_line(contour, "horizontal")
+        vert_values, vert_coor, vert_height = find_axis_line(contour, "vertical")
+        if hori_coor is None or vert_coor is None:
+            continue
+        hori_ticks = estimate_ticks(vert_coor, hori_coor, vert_values, hori_height, "x")
+        vert_ticks = estimate_ticks(hori_coor, vert_coor, hori_values, vert_height, "y")
+        return hori_ticks, vert_ticks
+    return None, None
 
+def estimate_ticks(other_axis_coor, axis_coor, ind_values, line_height, axis):
     # Filter data points taller than line
     # MARK: Assuming y-axis is at the left end of x-axis and x-axis is at the bottom of y-axis
     tick_pts = [[other_axis_coor]]
