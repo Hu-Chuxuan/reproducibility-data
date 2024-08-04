@@ -171,7 +171,7 @@ def contour_to_points(contour, direction):
             ind_values[x] = y_values
     else:
         for y in range(y_min, y_max):
-            x_values = np.where(image[y, x_min:x_max] == 255)[0] + x_min
+            x_values = np.where(image[y, x_min:x_max+1] == 255)[0] + x_min
             if len(x_values) <= 1:
                 return None
             ind_values[y] = x_values
@@ -183,9 +183,15 @@ def estimate_dots(contour, direction):
 
     # Calculate the average height of the contour
     avg = 0
+    max_length = 0
     for _, deps in ind_values.items():
-        avg += max(deps) - min(deps)
+        length = max(deps) - min(deps)
+        avg += length
+        max_length = max(max_length, length)
     avg /= len(ind_values)
+
+    if max_length < avg * 1.2:
+        avg = 0
 
     # Filter the points with smaller height
     points = []
@@ -261,12 +267,12 @@ def find_ticks(contours, hori_line, vert_line):
         vert_values, vert_coor, vert_height = find_axis_line(contour, "vertical", vert_line)
         if hori_coor is None or vert_coor is None:
             continue
-        hori_ticks = estimate_ticks(vert_coor, hori_coor, vert_values, hori_height, "x")
-        vert_ticks = estimate_ticks(hori_coor, vert_coor, hori_values, vert_height, "y")
+        hori_ticks = calculate_ticks(vert_coor, hori_coor, vert_values, hori_height, "x")
+        vert_ticks = calculate_ticks(hori_coor, vert_coor, hori_values, vert_height, "y")
         return hori_ticks, vert_ticks
     return None, None
 
-def estimate_ticks(other_axis_coor, axis_coor, ind_values, line_height, axis):
+def calculate_ticks(other_axis_coor, axis_coor, ind_values, line_height, axis):
     # Filter data points taller than line
     # MARK: Assuming y-axis is at the left end of x-axis and x-axis is at the bottom of y-axis
     tick_pts = [[other_axis_coor]]
