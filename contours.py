@@ -78,7 +78,7 @@ def get_label_positions(contours, w, h):
 
     return label_positions
 
-repeat = 5
+repeat = 3
 kernel_sz = 5
 max_scale = 2
 min_area = 100
@@ -86,10 +86,41 @@ min_area = 100
 def is_contour_closed(contour):
     return cv2.contourArea(contour) > cv2.arcLength(contour, True)
 
+def find_lines(image):
+    gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    edges = cv2.Canny(gray_image, 50, 150)
+    lines = cv2.HoughLines(edges, 1, np.pi/180, 200)
+
+    vertical_lines = []
+    horizontal_lines = []
+    for line in lines:
+        rho, theta = line[0]
+        if abs(theta - np.pi / 2) < np.pi / 6:
+            horizontal_lines.append((rho, theta))
+        elif abs(theta) < np.pi / 10:
+            vertical_lines.append((rho, theta))
+    cv2.imwrite("lines.png", image)
+    return horizontal_lines, vertical_lines
+
+def is_black(color):
+    # cast to float
+    color = color.astype(np.float)
+    min_color = min(color)
+    max_color = max(color)
+    if min_color == 0 and max_color != 0:
+        return False
+    return  (max_color - min_color) / (min_color + 1e-8) < 0.35 and min_color < 150
+
+def clear_color(image):
+    for i in range(image.shape[0]):
+        for j in range(image.shape[1]):
+            if is_black(image[i, j]):
+                image[i, j] = [0, 0, 0]
+            else:
+                image[i, j] = [255, 255, 255]
+    return image
+
 def draw_contours(image):
-    # Turn all pixel not black to white
-    mask = np.all(image != 0, axis=-1)
-    image[mask] = 255
     gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     for i in range(repeat):
         gray_image = cv2.GaussianBlur(gray_image, (kernel_sz, kernel_sz), 0)
@@ -108,18 +139,18 @@ def draw_contours(image):
                 final_contours.append(contour)
             
             # Mask every outside contours and leave every black points in the last grey image
-            mask = np.all(gray_image != 0) # Set all non-black points to 255
-            gray_image[mask] = 255
-            gray_image = cv2.bitwise_not(gray_image) # Reserve the black points
-            cv2.drawContours(gray_image, final_contours, -1, 255, -1) # Fill the edge of contours with white
-            image = cv2.bitwise_and(image, image, mask=gray_image)
-            cv2.imwrite("contours_mask.png", image)
+            # mask = np.all(gray_image != 0) # Set all non-black points to 255
+            # gray_image[mask] = 255
+            # gray_image = cv2.bitwise_not(gray_image) # Reserve the black points
+            # cv2.drawContours(gray_image, final_contours, -1, 255, -1) # Fill the edge of contours with white
+            # image = cv2.bitwise_and(image, image, mask=gray_image)
+            # cv2.imwrite("contours_mask.png", image)
 
-            label_positions = get_label_positions(final_contours, image.shape[1], image.shape[0])
+            # label_positions = get_label_positions(final_contours, image.shape[1], image.shape[0])
             colors = [np.random.randint(0, 256, 3).tolist() for _ in range(len(final_contours))]
             for j, contour in enumerate(final_contours):
                 cv2.drawContours(image, [contour], -1, colors[j], 1)
-                cv2.putText(image, str(j), label_positions[j], cv2.FONT_HERSHEY_SIMPLEX, 1, colors[j], 2)
+                # cv2.putText(image, str(j), label_positions[j], cv2.FONT_HERSHEY_SIMPLEX, 1, colors[j], 2)
 
             return final_contours, image, colors
 
@@ -182,7 +213,7 @@ def estimate_dots(contour, direction):
         i = j
     return res
 
-def find_axis_line(contour, axis):
+def find_axis_line(contour, axis, cv_lines):
     same_dir_values = contour_to_points(contour, axis)
     
     # Find the axis as the longest line
@@ -195,11 +226,11 @@ def find_axis_line(contour, axis):
             continue
         length = max(values) - min(values)
         total_sum += length
-        if max_length < length * 0.99:
+        if max_length < length * 0.95:
             lines = [i]
             max_length = length
             lines_len_sum = length
-        elif length > max_length * 0.99:
+        elif length > max_length * 0.95:
             lines.append(i)
             max_length = max(max_length, length)
             lines_len_sum += length
@@ -216,16 +247,18 @@ def find_axis_line(contour, axis):
                 len_inline += len(same_dir_values[ind+1])
             if max_length <= len_inline:
                 axis_coor = (line_lo + line_hi) // 2
-                return same_dir_values, axis_coor, line_hi - line_lo
+                for l in cv_lines:
+                    if abs(l[0] - axis_coor) < 5:
+                        return same_dir_values, axis_coor, line_hi - line_lo
         return same_dir_values, None, None
     else:
         return same_dir_values, None, None
 
 # TODO: Handle when other_axis_coor is None
-def find_ticks(contours):
+def find_ticks(contours, hori_line, vert_line):
     for i, contour in enumerate(contours):
-        hori_values, hori_coor, hori_height = find_axis_line(contour, "horizontal")
-        vert_values, vert_coor, vert_height = find_axis_line(contour, "vertical")
+        hori_values, hori_coor, hori_height = find_axis_line(contour, "horizontal", hori_line)
+        vert_values, vert_coor, vert_height = find_axis_line(contour, "vertical", vert_line)
         if hori_coor is None or vert_coor is None:
             continue
         hori_ticks = estimate_ticks(vert_coor, hori_coor, vert_values, hori_height, "x")
