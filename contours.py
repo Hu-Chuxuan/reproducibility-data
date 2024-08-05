@@ -158,21 +158,22 @@ def contour_to_points(contour, direction):
     w, h = max(contour[:, 0, 0]), max(contour[:, 0, 1])
     image = np.zeros((h+5, w+5, 3), np.uint8)
     cv2.drawContours(image, [contour], -1, (255, 255, 255), 1)
+    cv2.imwrite("contour.png", image)
     x_min, y_min = min(contour[:, 0, 0]), min(contour[:, 0, 1])
-    x_max, y_max = w, h
+    x_max, y_max = w + 1, h + 1
     
     # Unify the direction
     ind_values = {}
     if direction == "vertical":
         for x in range(x_min, x_max):
-            y_values = np.where(image[y_min:y_max+1, x] == 255)[0] + y_min
-            if len(y_values) <= 1:
+            y_values = np.unique(np.where(image[y_min:y_max+1, x] == 255)[0] + y_min)
+            if len(y_values) <= 1 and x != x_min and x != x_max-1:
                 return None
             ind_values[x] = y_values
     else:
         for y in range(y_min, y_max):
-            x_values = np.where(image[y, x_min:x_max+1] == 255)[0] + x_min
-            if len(x_values) <= 1:
+            x_values = np.unique(np.where(image[y, x_min:x_max+1] == 255)[0] + x_min)
+            if len(x_values) <= 1 and y != y_min and y != y_max-1:
                 return None
             ind_values[y] = x_values
     
@@ -243,7 +244,8 @@ def find_axis_line(contour, axis, cv_lines):
     avg = (total_sum - lines_len_sum) // (len(same_dir_values) - len(lines))
 
     if avg * 2 < max_length:
-        line_lo, line_hi = min(lines), max(lines)
+        line_max, line_sec = min(lines), max(lines)
+        max_num, sec_num = 0, 0
         # Find straight line among the longest lines
         for ind in lines:
             len_inline = len(same_dir_values[ind])
@@ -251,11 +253,21 @@ def find_axis_line(contour, axis, cv_lines):
                 len_inline += len(same_dir_values[ind-1])
             if ind+1 in same_dir_values:
                 len_inline += len(same_dir_values[ind+1])
-            if max_length <= len_inline:
-                axis_coor = (line_lo + line_hi) // 2
-                for l in cv_lines:
-                    if abs(l[0] - axis_coor) < 5:
-                        return same_dir_values, axis_coor, line_hi - line_lo
+            # len_inline = 805, max_num = 809
+            if len_inline > max_num or (max_num * 0.95 < len_inline and ind == line_max + 1):
+                if ind > line_max + 1:
+                    sec_num = max_num
+                    line_sec = line_max
+                max_num = max(len_inline, max_num)
+                line_max = ind
+            elif len_inline * 0.95 > sec_num:
+                sec_num = len_inline
+                line_sec = ind
+        line_lo = min(line_max, line_sec)
+        line_hi = max(line_max, line_sec)
+        for l in cv_lines:
+            if line_lo <= l[0] <= line_hi:
+                return same_dir_values, int(l[0]), line_hi - line_lo
         return same_dir_values, None, None
     else:
         return same_dir_values, None, None
@@ -278,7 +290,12 @@ def calculate_ticks(other_axis_coor, axis_coor, ind_values, line_height, axis):
     tick_pts = [[other_axis_coor]]
     for ind in sorted(ind_values.keys(), reverse=axis == "y"):
         deps = ind_values[ind]
-        if line_height * 1.5 < max(deps) - min(deps):
+        min_dep, max_dep = deps[0], deps[0]
+        for i, dep in enumerate(deps):
+            if abs(dep - axis_coor) < 50:
+                min_dep = min(min_dep, dep)
+                max_dep = max(max_dep, dep)
+        if line_height * 1.5 < max_dep - min_dep:
             # print(ind, max(deps) - min(deps), line_height * 1.1)
             if (axis == "x" and ind > other_axis_coor) or (axis == "y" and ind < other_axis_coor):
                 if abs(ind - tick_pts[-1][-1]) > 2:
